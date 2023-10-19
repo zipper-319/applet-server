@@ -1,0 +1,154 @@
+# Generated with protoc-gen-openapi
+# https://github.com/google/gnostic/tree/master/cmd/protoc-gen-openapi
+
+openapi: 3.0.3
+info:
+    title: VoiceDataOperation API
+    version: 0.0.1
+paths:
+    /api/v2/voice-data/commit:
+        post:
+            tags:
+                - VoiceDataOperation
+            description: 提交已完成录制音频
+            operationId: VoiceDataOperation_Commit
+            requestBody:
+                content:
+                    application/json: {}
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/applet.v2.CommitResData'
+    /api/v2/voice-data/download:
+        get:
+            tags:
+                - VoiceDataOperation
+            description: 下载已经录制音频
+            operationId: VoiceDataOperation_DownloadVoice
+            parameters:
+                - name: sequence
+                  in: query
+                  description: 序号
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/applet.v2.DownloadResData'
+    /api/v2/voice-data/get-progress:
+        get:
+            tags:
+                - VoiceDataOperation
+            description: 获取音频录制进度，返回已录制的音频数量
+            operationId: VoiceDataOperation_GetProgress
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/applet.v2.ProgressResData'
+    /api/v2/voice-data/text/get:
+        get:
+            tags:
+                - VoiceDataOperation
+            description: 获取录音文本
+            operationId: VoiceDataOperation_GetText
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/applet.v2.GetTextResData'
+    /api/v2/voice-data/upload:
+        post:
+            tags:
+                - VoiceDataOperation
+            description: 训练数据上传
+            operationId: VoiceDataOperation_PutVoiceData
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/applet.v2.VoiceDataReqData'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/applet.v2.VoiceDataResData'
+components:
+    schemas:
+        applet.v2.CommitResData:
+            type: object
+            properties:
+                finishedTime:
+                    type: string
+                    description: 完成时间点  时间格式"2006-01-02"
+                awaitTrain:
+                    type: integer
+                    description: 需要等待训练的时间  单位小时
+                    format: int32
+        applet.v2.DownloadResData:
+            type: object
+            properties:
+                voiceData:
+                    type: string
+                    description: 音频数据，base64编码
+        applet.v2.GetTextResData:
+            type: object
+            properties:
+                textData:
+                    type: string
+                    description: 文本数据
+        applet.v2.ProgressResData:
+            type: object
+            properties:
+                currentNumber:
+                    type: integer
+                    description: 已录制的数量
+                    format: int32
+                finishedTime:
+                    type: string
+                    description: 已完成录制时的时间点,  未完成时该值为空  时间格式"2006-01-02"
+                awaitTrain:
+                    type: integer
+                    description: 需要等待训练的时间  单位小时
+                    format: int32
+        applet.v2.VoiceDataReqData:
+            type: object
+            properties:
+                voiceType:
+                    type: integer
+                    format: enum
+                voice:
+                    type: string
+                    description: 音频,base64编码
+                sequence:
+                    type: integer
+                    description: 序号
+                    format: int32
+                speakerSerial:
+                    type: integer
+                    description: 发音人编号
+                    format: int32
+        applet.v2.VoiceDataResData:
+            type: object
+            properties:
+                nextSequence:
+                    type: integer
+                    description: 下一条录制音频序号
+                    format: int32
+tags:
+    - name: VoiceDataOperation

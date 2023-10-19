@@ -1,0 +1,108 @@
+syntax = "proto3";
+
+package applet.v2;
+option go_package = "applet-server/api/v2/applet";
+
+
+import "google/api/annotations.proto";
+import "validate/validate.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "options/gorm.proto";
+import "google/protobuf/empty.proto";
+
+
+service VoiceDataOperation {
+  // 训练数据上传
+  rpc putVoiceData (VoiceDataReqData) returns (VoiceDataResData){
+    option (google.api.http) = {
+      post: "/api/v2/voice-data/upload",
+      body: "*"
+    };
+
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "upload"
+      description: "上传音频数据"
+    };
+  }
+  // 获取音频录制进度，返回已录制的音频数量
+  rpc getProgress(google.protobuf.Empty)  returns (ProgressResData){
+    option (google.api.http) = {
+      get: "/api/v2/voice-data/get-progress",
+    };
+  }
+  // 下载已经录制音频
+  rpc downloadVoice(DownloadReqData)  returns ( DownloadResData){
+    option (google.api.http) = {
+      get: "/api/v2/voice-data/download",
+    };
+  }
+  // 提交已完成录制音频
+  rpc commit(google.protobuf.Empty)  returns (CommitResData){
+    option (google.api.http) = {
+      post: "/api/v2/voice-data/commit",
+      body: "*"
+    };
+  }
+  // 获取录音文本
+  rpc getText(google.protobuf.Empty)  returns (GetTextResData){
+    option (google.api.http) = {
+      get: "/api/v2/voice-data/text/get",
+    };
+  }
+}
+
+enum VoiceType{
+    Primary = 0;
+    Middle = 1;
+    Senior = 2;
+    Custom = 3;
+}
+
+message VoiceDataReqData {
+  VoiceType  voice_type = 1;
+  // 音频,base64编码
+  string voice = 2;
+  // 序号
+  int32  sequence = 3;
+  // 发音人编号
+  int32  speaker_serial = 4;
+}
+
+message VoiceDataResData {
+  // 下一条录制音频序号
+  int32 next_sequence = 3;
+}
+
+
+message ProgressResData {
+  // 已录制的数量
+  int32 current_number = 2;
+  // 已完成录制时的时间点,  未完成时该值为空  时间格式"2006-01-02"
+  string  finished_time = 3;
+  // 需要等待训练的时间  单位小时
+  int32  await_train = 4;
+}
+
+message DownloadReqData {
+  // 序号
+  int32  sequence = 2;
+}
+
+message DownloadResData {
+  // 音频数据，base64编码
+  string voiceData = 2;
+}
+
+
+message CommitResData {
+  // 完成时间点  时间格式"2006-01-02"
+  string  finished_time = 2;
+  // 需要等待训练的时间  单位小时
+  int32  await_train = 3;
+}
+
+
+message GetTextResData {
+  // 文本数据
+  string  text_data = 2;
+}
