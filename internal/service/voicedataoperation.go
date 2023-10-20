@@ -26,7 +26,12 @@ func NewVoiceDataOperationService(useCase *biz.S3UseCase, logger log.Logger) *Vo
 }
 
 func (s *VoiceDataOperationService) PutVoiceData(ctx context.Context, req *pb.VoiceDataReqData) (*pb.VoiceDataResData, error) {
-	var username string
+	tokenInfo, ok := jwtUtil.GetTokenInfo(ctx)
+	if !ok {
+		return nil, jwtUtil.ErrTokenInvalid
+	}
+	s.Infof("tokenInfo: %+v", tokenInfo)
+	username := tokenInfo.Username
 	voiceData, err := base64.StdEncoding.DecodeString(req.Voice)
 	if err != nil {
 		return nil, err
@@ -37,7 +42,12 @@ func (s *VoiceDataOperationService) PutVoiceData(ctx context.Context, req *pb.Vo
 	return &pb.VoiceDataResData{}, nil
 }
 func (s *VoiceDataOperationService) GetProgress(ctx context.Context, req *pb.ProgressRequest) (*pb.ProgressResData, error) {
-	var username string
+	tokenInfo, ok := jwtUtil.GetTokenInfo(ctx)
+	if !ok {
+		return nil, jwtUtil.ErrTokenInvalid
+	}
+	s.Infof("tokenInfo: %+v", tokenInfo)
+	username := tokenInfo.Username
 	key := fmt.Sprintf("finishedTime:%s:%s:%d", username, req.VoiceType, req.SpeakerSerial)
 	finishedTime, err := s.S3UseCase.Data.RedisClient.Get(ctx, key).Int64()
 	if err != nil {
@@ -53,7 +63,12 @@ func (s *VoiceDataOperationService) DownloadVoice(ctx context.Context, req *pb.D
 	return &pb.DownloadResData{}, nil
 }
 func (s *VoiceDataOperationService) Commit(ctx context.Context, req *pb.CommitRequest) (*pb.CommitResData, error) {
-	var username string
+	tokenInfo, ok := jwtUtil.GetTokenInfo(ctx)
+	if !ok {
+		return nil, jwtUtil.ErrTokenInvalid
+	}
+	s.Infof("tokenInfo: %+v", tokenInfo)
+	username := tokenInfo.Username
 	s3NameList := make([]string, 0, 50)
 	for i := 0; i < voiceText.VoiceDataSize[req.VoiceType]; i++ {
 		s3NameList = append(s3NameList, fmt.Sprintf("%s/%d/%d.pcm", username, req.SpeakerSerial, i))

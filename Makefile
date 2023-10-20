@@ -12,7 +12,7 @@ ifeq ($(GOHOSTOS), windows)
 	INTERNAL_PROTO_FILES=$(shell $(Git_Bash) -c "find internal -name *.proto")
 	API_PROTO_FILES=$(shell $(Git_Bash) -c "find api -name *.proto")
 else
-	INTERNAL_PROTO_FILES=$(shell find internal -name *.proto)
+	INTERNAL_PROTO_FILES=$(shell find internal/conf -name *.proto)
 	API_PROTO_FILES=$(shell find api -name *.proto)
 endif
 

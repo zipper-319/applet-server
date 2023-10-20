@@ -37,8 +37,23 @@ message App{
   message User{
     google.protobuf.Duration cache_expire = 2;
   }
-  Jwt  auth = 1;
-  User user = 2;
+  message ASR{
+    string addr = 1;
+    google.protobuf.Duration timeout = 2;
+  }
+  message TTS{
+    string addr = 1;
+    google.protobuf.Duration timeout = 2;
+  }
+  message Nlp{
+    string addr = 1;
+    google.protobuf.Duration timeout = 2;
+  }
+  ASR asr = 1;
+  TTS tts = 2;
+  Nlp nlp = 3;
+  Jwt  auth = 4;
+  User user = 5;
 }
 
 message Data {

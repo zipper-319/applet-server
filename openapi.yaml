@@ -7,16 +7,23 @@ info:
     version: 0.0.1
 paths:
     /api/v2/login:
-        post:
+        get:
             tags:
                 - Account
             operationId: Account_Login
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/applet.v2.LoginReq'
-                required: true
+            parameters:
+                - name: fullName
+                  in: query
+                  schema:
+                    type: string
+                - name: phoneNumber
+                  in: query
+                  schema:
+                    type: string
+                - name: openId
+                  in: query
+                  schema:
+                    type: string
             responses:
                 "200":
                     description: OK
@@ -160,15 +167,6 @@ components:
                     items:
                         type: string
                     description: 文本数据
-        applet.v2.LoginReq:
-            type: object
-            properties:
-                fullName:
-                    type: string
-                phoneNumber:
-                    type: string
-                openId:
-                    type: string
         applet.v2.LoginResp:
             type: object
             properties:

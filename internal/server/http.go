@@ -9,6 +9,7 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware/metrics"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"github.com/go-kratos/kratos/v2/middleware/validate"
+	"github.com/go-kratos/swagger-api/openapiv2"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/transport/http"
@@ -31,6 +32,9 @@ func NewHTTPServer(c *conf.Server, middlewares http.ServerOption, vdSer *service
 	opts = append(opts, http.ResponseEncoder(apiHook.ResponseEncoder))
 	opts = append(opts, http.ErrorEncoder(apiHook.ErrorEncoder))
 	srv := http.NewServer(opts...)
+
+	swagger := openapiv2.NewHandler()
+	srv.HandlePrefix("/q", swagger)
 
 	applet.RegisterVoiceDataOperationHTTPServer(srv, vdSer)
 	applet.RegisterAccountHTTPServer(srv, account)

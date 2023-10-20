@@ -27,15 +27,12 @@ type AccountHTTPServer interface {
 
 func RegisterAccountHTTPServer(s *http.Server, srv AccountHTTPServer) {
 	r := s.Route("/")
-	r.POST("/api/v2/login", _Account_Login0_HTTP_Handler(srv))
+	r.GET("/api/v2/login", _Account_Login0_HTTP_Handler(srv))
 }
 
 func _Account_Login0_HTTP_Handler(srv AccountHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in LoginReq
-		if err := ctx.Bind(&in); err != nil {
-			return err
-		}
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
@@ -67,10 +64,10 @@ func NewAccountHTTPClient(client *http.Client) AccountHTTPClient {
 func (c *AccountHTTPClientImpl) Login(ctx context.Context, in *LoginReq, opts ...http.CallOption) (*LoginResp, error) {
 	var out LoginResp
 	pattern := "/api/v2/login"
-	path := binding.EncodeURL(pattern, in, false)
+	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationAccountlogin))
 	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {
 		return nil, err
 	}

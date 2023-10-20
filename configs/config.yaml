@@ -1,10 +1,10 @@
 server:
   http:
-    addr: 0.0.0.0:8120
-    timeout: 2s
+    addr: 0.0.0.0:8300
+    timeout: 5s
   grpc:
-    addr: 0.0.0.0:9120
-    timeout: 1s
+    addr: 0.0.0.0:9300
+    timeout: 5s
 
 app:
   auth:

@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+package applet.v2;
+
+option go_package = "api/v2/applet;applet";
+
+import "google/api/annotations.proto";
+
+service ChatRoom {
+  rpc chat(ChatWSReq) returns (ChatWSResp) {
+  };
+}
+
+
+// url中的路径参数；后续可以传递TTS发音人角色、语速、2D数字人形象等参数
+message ChatWSReq {
+  int32  robot_id = 1;
+  string position = 2;
+  string language = 3;
+  int32  agent_id = 4;
+  string session_id = 5;
+}
+
+message ChatWSResp {
+  int32  code = 1;
+  string message = 2;
+  string Metadata = 3;   // 根据后续方案而定，可能是实时音频流地址。
+}
+
+
+enum MessageType {
+  chat_voice = 0;
+  chat_text = 1;
+  chat_interruption = 2;
+  chat_parameter = 3;
+}
+
+message ChatClientMessage {
+  string      content = 1;
+  MessageType type = 2;
+  string      trace_id  = 3;
+  bool        is_end = 4;   // 会话是否结束
+}
+
+enum ServiceType {
+  Service_VAD = 0;
+  Service_ASR = 1;
+  Service_Nlp = 2;
+  Service_TTS = 3;
+  service_digital_human = 4;
+}
+
+message ChatServerMessage {
+    ServiceType service_type = 1;
+    bytes content = 2;
+    bool is_end = 3;
+    bool is_success = 4;
+    string err_msg = 5;
+}
+
+enum  VADPauseMode {
+  VAD_PAUSE_MODE_FAST = 0;
+  VAD_PAUSE_MODE_NORMAL = 1;
+  VAD_PAUSE_MODE_SLOW = 2;
+}
+
+enum Vendor{
+  VENDOR_CLOUDMINDS = 0;
+  VENDOR_GOOGLE = 1;
+  VENDOR_IFlyTek = 2;
+  VENDOR_CPAll = 3;
+
+}
+
+
+message ChatParameter{
+  int32 speed = 1;
+  int32 volume = 2;
+  int32 pitch = 3;
+  string speaker = 4;
+  string style  = 5;
+  string language = 6;
+}
+
