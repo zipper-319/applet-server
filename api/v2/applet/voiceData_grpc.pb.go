@@ -11,7 +11,6 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -34,13 +33,13 @@ type VoiceDataOperationClient interface {
 	// 训练数据上传
 	PutVoiceData(ctx context.Context, in *VoiceDataReqData, opts ...grpc.CallOption) (*VoiceDataResData, error)
 	// 获取音频录制进度，返回已录制的音频数量
-	GetProgress(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ProgressResData, error)
+	GetProgress(ctx context.Context, in *ProgressRequest, opts ...grpc.CallOption) (*ProgressResData, error)
 	// 下载已经录制音频
 	DownloadVoice(ctx context.Context, in *DownloadReqData, opts ...grpc.CallOption) (*DownloadResData, error)
 	// 提交已完成录制音频
-	Commit(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*CommitResData, error)
+	Commit(ctx context.Context, in *CommitRequest, opts ...grpc.CallOption) (*CommitResData, error)
 	// 获取录音文本
-	GetText(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetTextResData, error)
+	GetText(ctx context.Context, in *GetTextRequest, opts ...grpc.CallOption) (*GetTextResData, error)
 }
 
 type voiceDataOperationClient struct {
@@ -60,7 +59,7 @@ func (c *voiceDataOperationClient) PutVoiceData(ctx context.Context, in *VoiceDa
 	return out, nil
 }
 
-func (c *voiceDataOperationClient) GetProgress(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ProgressResData, error) {
+func (c *voiceDataOperationClient) GetProgress(ctx context.Context, in *ProgressRequest, opts ...grpc.CallOption) (*ProgressResData, error) {
 	out := new(ProgressResData)
 	err := c.cc.Invoke(ctx, VoiceDataOperation_GetProgress_FullMethodName, in, out, opts...)
 	if err != nil {
@@ -78,7 +77,7 @@ func (c *voiceDataOperationClient) DownloadVoice(ctx context.Context, in *Downlo
 	return out, nil
 }
 
-func (c *voiceDataOperationClient) Commit(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*CommitResData, error) {
+func (c *voiceDataOperationClient) Commit(ctx context.Context, in *CommitRequest, opts ...grpc.CallOption) (*CommitResData, error) {
 	out := new(CommitResData)
 	err := c.cc.Invoke(ctx, VoiceDataOperation_Commit_FullMethodName, in, out, opts...)
 	if err != nil {
@@ -87,7 +86,7 @@ func (c *voiceDataOperationClient) Commit(ctx context.Context, in *emptypb.Empty
 	return out, nil
 }
 
-func (c *voiceDataOperationClient) GetText(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetTextResData, error) {
+func (c *voiceDataOperationClient) GetText(ctx context.Context, in *GetTextRequest, opts ...grpc.CallOption) (*GetTextResData, error) {
 	out := new(GetTextResData)
 	err := c.cc.Invoke(ctx, VoiceDataOperation_GetText_FullMethodName, in, out, opts...)
 	if err != nil {
@@ -103,13 +102,13 @@ type VoiceDataOperationServer interface {
 	// 训练数据上传
 	PutVoiceData(context.Context, *VoiceDataReqData) (*VoiceDataResData, error)
 	// 获取音频录制进度，返回已录制的音频数量
-	GetProgress(context.Context, *emptypb.Empty) (*ProgressResData, error)
+	GetProgress(context.Context, *ProgressRequest) (*ProgressResData, error)
 	// 下载已经录制音频
 	DownloadVoice(context.Context, *DownloadReqData) (*DownloadResData, error)
 	// 提交已完成录制音频
-	Commit(context.Context, *emptypb.Empty) (*CommitResData, error)
+	Commit(context.Context, *CommitRequest) (*CommitResData, error)
 	// 获取录音文本
-	GetText(context.Context, *emptypb.Empty) (*GetTextResData, error)
+	GetText(context.Context, *GetTextRequest) (*GetTextResData, error)
 	mustEmbedUnimplementedVoiceDataOperationServer()
 }
 
@@ -120,16 +119,16 @@ type UnimplementedVoiceDataOperationServer struct {
 func (UnimplementedVoiceDataOperationServer) PutVoiceData(context.Context, *VoiceDataReqData) (*VoiceDataResData, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PutVoiceData not implemented")
 }
-func (UnimplementedVoiceDataOperationServer) GetProgress(context.Context, *emptypb.Empty) (*ProgressResData, error) {
+func (UnimplementedVoiceDataOperationServer) GetProgress(context.Context, *ProgressRequest) (*ProgressResData, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProgress not implemented")
 }
 func (UnimplementedVoiceDataOperationServer) DownloadVoice(context.Context, *DownloadReqData) (*DownloadResData, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DownloadVoice not implemented")
 }
-func (UnimplementedVoiceDataOperationServer) Commit(context.Context, *emptypb.Empty) (*CommitResData, error) {
+func (UnimplementedVoiceDataOperationServer) Commit(context.Context, *CommitRequest) (*CommitResData, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Commit not implemented")
 }
-func (UnimplementedVoiceDataOperationServer) GetText(context.Context, *emptypb.Empty) (*GetTextResData, error) {
+func (UnimplementedVoiceDataOperationServer) GetText(context.Context, *GetTextRequest) (*GetTextResData, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetText not implemented")
 }
 func (UnimplementedVoiceDataOperationServer) mustEmbedUnimplementedVoiceDataOperationServer() {}
@@ -164,7 +163,7 @@ func _VoiceDataOperation_PutVoiceData_Handler(srv interface{}, ctx context.Conte
 }
 
 func _VoiceDataOperation_GetProgress_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(ProgressRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -176,7 +175,7 @@ func _VoiceDataOperation_GetProgress_Handler(srv interface{}, ctx context.Contex
 		FullMethod: VoiceDataOperation_GetProgress_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(VoiceDataOperationServer).GetProgress(ctx, req.(*emptypb.Empty))
+		return srv.(VoiceDataOperationServer).GetProgress(ctx, req.(*ProgressRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -200,7 +199,7 @@ func _VoiceDataOperation_DownloadVoice_Handler(srv interface{}, ctx context.Cont
 }
 
 func _VoiceDataOperation_Commit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(CommitRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -212,13 +211,13 @@ func _VoiceDataOperation_Commit_Handler(srv interface{}, ctx context.Context, de
 		FullMethod: VoiceDataOperation_Commit_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(VoiceDataOperationServer).Commit(ctx, req.(*emptypb.Empty))
+		return srv.(VoiceDataOperationServer).Commit(ctx, req.(*CommitRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _VoiceDataOperation_GetText_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(GetTextRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -230,7 +229,7 @@ func _VoiceDataOperation_GetText_Handler(srv interface{}, ctx context.Context, d
 		FullMethod: VoiceDataOperation_GetText_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(VoiceDataOperationServer).GetText(ctx, req.(*emptypb.Empty))
+		return srv.(VoiceDataOperationServer).GetText(ctx, req.(*GetTextRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

@@ -30,17 +30,14 @@ message Server {
 }
 
 message App{
-  message Auth{
-    string jwt_key = 1;
-    google.protobuf.Duration jwt_expire = 2;
-    google.protobuf.Duration captcha_redis_expire = 3;
-    string captcha_redis_key = 4;
-    string aes_key = 5;
+  message Jwt{
+    string key = 1;
+    google.protobuf.Duration expire = 2;
   }
   message User{
     google.protobuf.Duration cache_expire = 2;
   }
-  Auth auth = 1;
+  Jwt  auth = 1;
   User user = 2;
 }
 

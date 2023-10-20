@@ -23,26 +23,26 @@ type S3Service struct {
 	Bucket  string
 }
 
-func NewS3Service(config *conf.S3, logger log.Logger) (*S3Service, error) {
-	log.NewHelper(logger).Info(config.Endpoint, config.Region, config.AccessKey, config.SecretKey)
+func NewS3Service(config *conf.Data, logger log.Logger) (*S3Service, error) {
+	log.NewHelper(logger).Infof("endpoint:%s;region:%s, access key:%s, secret key:%s", config.S3.Endpoint, config.S3.Region, config.S3.AccessKey, config.S3.SecretKey)
 	sess, err := session.NewSession()
 	if err != nil {
 		return nil, err
 	}
 	service := s3.New(sess, &aws.Config{
 		DisableSSL: aws.Bool(false),
-		Endpoint:   aws.String(config.Endpoint),
-		Region:     aws.String(config.Region),
+		Endpoint:   aws.String(config.S3.Endpoint),
+		Region:     aws.String(config.S3.Region),
 		// aws s3
 		//Credentials: credentials.NewStaticCredentials("AKIA5S5K44JHI2G5V7MU", "IEVM3My5men1km7taC29g7SJPHcSLoRkZwAxTYK1", ""),
-		Credentials: credentials.NewStaticCredentials(config.AccessKey, config.SecretKey, ""),
+		Credentials: credentials.NewStaticCredentials(config.S3.AccessKey, config.S3.SecretKey, ""),
 	})
 
 	return &S3Service{
 		S3:      service,
 		Helper:  log.NewHelper(logger),
-		Timeout: int64(config.Timeout),
-		Bucket:  config.Bucket,
+		Timeout: int64(config.S3.Timeout),
+		Bucket:  config.S3.Bucket,
 	}, nil
 }
 

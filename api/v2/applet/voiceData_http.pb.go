@@ -10,7 +10,6 @@ import (
 	context "context"
 	http "github.com/go-kratos/kratos/v2/transport/http"
 	binding "github.com/go-kratos/kratos/v2/transport/http/binding"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -28,13 +27,13 @@ const OperationVoiceDataOperationputVoiceData = "/applet.v2.VoiceDataOperation/p
 
 type VoiceDataOperationHTTPServer interface {
 	// Commit 提交已完成录制音频
-	Commit(context.Context, *emptypb.Empty) (*CommitResData, error)
+	Commit(context.Context, *CommitRequest) (*CommitResData, error)
 	// DownloadVoice 下载已经录制音频
 	DownloadVoice(context.Context, *DownloadReqData) (*DownloadResData, error)
 	// GetProgress 获取音频录制进度，返回已录制的音频数量
-	GetProgress(context.Context, *emptypb.Empty) (*ProgressResData, error)
+	GetProgress(context.Context, *ProgressRequest) (*ProgressResData, error)
 	// GetText 获取录音文本
-	GetText(context.Context, *emptypb.Empty) (*GetTextResData, error)
+	GetText(context.Context, *GetTextRequest) (*GetTextResData, error)
 	// PutVoiceData 训练数据上传
 	PutVoiceData(context.Context, *VoiceDataReqData) (*VoiceDataResData, error)
 }
@@ -72,13 +71,13 @@ func _VoiceDataOperation_PutVoiceData0_HTTP_Handler(srv VoiceDataOperationHTTPSe
 
 func _VoiceDataOperation_GetProgress0_HTTP_Handler(srv VoiceDataOperationHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
-		var in emptypb.Empty
+		var in ProgressRequest
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
 		http.SetOperation(ctx, OperationVoiceDataOperationgetProgress)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.GetProgress(ctx, req.(*emptypb.Empty))
+			return srv.GetProgress(ctx, req.(*ProgressRequest))
 		})
 		out, err := h(ctx, &in)
 		if err != nil {
@@ -110,7 +109,7 @@ func _VoiceDataOperation_DownloadVoice0_HTTP_Handler(srv VoiceDataOperationHTTPS
 
 func _VoiceDataOperation_Commit0_HTTP_Handler(srv VoiceDataOperationHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
-		var in emptypb.Empty
+		var in CommitRequest
 		if err := ctx.Bind(&in); err != nil {
 			return err
 		}
@@ -119,7 +118,7 @@ func _VoiceDataOperation_Commit0_HTTP_Handler(srv VoiceDataOperationHTTPServer) 
 		}
 		http.SetOperation(ctx, OperationVoiceDataOperationcommit)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.Commit(ctx, req.(*emptypb.Empty))
+			return srv.Commit(ctx, req.(*CommitRequest))
 		})
 		out, err := h(ctx, &in)
 		if err != nil {
@@ -132,13 +131,13 @@ func _VoiceDataOperation_Commit0_HTTP_Handler(srv VoiceDataOperationHTTPServer) 
 
 func _VoiceDataOperation_GetText0_HTTP_Handler(srv VoiceDataOperationHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
-		var in emptypb.Empty
+		var in GetTextRequest
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
 		http.SetOperation(ctx, OperationVoiceDataOperationgetText)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.GetText(ctx, req.(*emptypb.Empty))
+			return srv.GetText(ctx, req.(*GetTextRequest))
 		})
 		out, err := h(ctx, &in)
 		if err != nil {
@@ -150,10 +149,10 @@ func _VoiceDataOperation_GetText0_HTTP_Handler(srv VoiceDataOperationHTTPServer)
 }
 
 type VoiceDataOperationHTTPClient interface {
-	Commit(ctx context.Context, req *emptypb.Empty, opts ...http.CallOption) (rsp *CommitResData, err error)
+	Commit(ctx context.Context, req *CommitRequest, opts ...http.CallOption) (rsp *CommitResData, err error)
 	DownloadVoice(ctx context.Context, req *DownloadReqData, opts ...http.CallOption) (rsp *DownloadResData, err error)
-	GetProgress(ctx context.Context, req *emptypb.Empty, opts ...http.CallOption) (rsp *ProgressResData, err error)
-	GetText(ctx context.Context, req *emptypb.Empty, opts ...http.CallOption) (rsp *GetTextResData, err error)
+	GetProgress(ctx context.Context, req *ProgressRequest, opts ...http.CallOption) (rsp *ProgressResData, err error)
+	GetText(ctx context.Context, req *GetTextRequest, opts ...http.CallOption) (rsp *GetTextResData, err error)
 	PutVoiceData(ctx context.Context, req *VoiceDataReqData, opts ...http.CallOption) (rsp *VoiceDataResData, err error)
 }
 
@@ -165,7 +164,7 @@ func NewVoiceDataOperationHTTPClient(client *http.Client) VoiceDataOperationHTTP
 	return &VoiceDataOperationHTTPClientImpl{client}
 }
 
-func (c *VoiceDataOperationHTTPClientImpl) Commit(ctx context.Context, in *emptypb.Empty, opts ...http.CallOption) (*CommitResData, error) {
+func (c *VoiceDataOperationHTTPClientImpl) Commit(ctx context.Context, in *CommitRequest, opts ...http.CallOption) (*CommitResData, error) {
 	var out CommitResData
 	pattern := "/api/v2/voice-data/commit"
 	path := binding.EncodeURL(pattern, in, false)
@@ -191,7 +190,7 @@ func (c *VoiceDataOperationHTTPClientImpl) DownloadVoice(ctx context.Context, in
 	return &out, err
 }
 
-func (c *VoiceDataOperationHTTPClientImpl) GetProgress(ctx context.Context, in *emptypb.Empty, opts ...http.CallOption) (*ProgressResData, error) {
+func (c *VoiceDataOperationHTTPClientImpl) GetProgress(ctx context.Context, in *ProgressRequest, opts ...http.CallOption) (*ProgressResData, error) {
 	var out ProgressResData
 	pattern := "/api/v2/voice-data/get-progress"
 	path := binding.EncodeURL(pattern, in, true)
@@ -204,7 +203,7 @@ func (c *VoiceDataOperationHTTPClientImpl) GetProgress(ctx context.Context, in *
 	return &out, err
 }
 
-func (c *VoiceDataOperationHTTPClientImpl) GetText(ctx context.Context, in *emptypb.Empty, opts ...http.CallOption) (*GetTextResData, error) {
+func (c *VoiceDataOperationHTTPClientImpl) GetText(ctx context.Context, in *GetTextRequest, opts ...http.CallOption) (*GetTextResData, error) {
 	var out GetTextResData
 	pattern := "/api/v2/voice-data/text/get"
 	path := binding.EncodeURL(pattern, in, true)

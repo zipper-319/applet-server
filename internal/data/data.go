@@ -1,6 +1,7 @@
 package data
 
 import (
+	"applet-server/internal/data/cache"
 	"applet-server/internal/data/s3"
 	"github.com/redis/go-redis/v9"
 
@@ -8,7 +9,7 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, s3.NewS3Service)
+var ProviderSet = wire.NewSet(NewData, s3.NewS3Service, cache.NewRedisCache)
 
 // Data .
 type Data struct {

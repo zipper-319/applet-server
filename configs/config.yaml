@@ -8,11 +8,8 @@ server:
 
 app:
   auth:
-    jwt_key: sQ9QxhasVErjykdG
-    jwt_expire: 150000000s
-    captcha_redis_expire: 30000000s
-    captcha_redis_key:  captcha
-    aes_key: NFordaohhdiQMDu5
+    key: sQ9QxhasVErjykdG
+    expire: 150000000s
 
 data:
   database:
@@ -24,7 +21,7 @@ data:
     read_timeout: 2s
     write_timeout: 2s
     max_retries: 3
-  mongoDB:
+  s3:
     endpoint: http://dev-s3.harix.iamidata.com
     access_key: EHNE5AQFQSEXF8TMPJ23
     secret_key: NTxFX1OUACpGKuN9JrMS8N9f39cBcs9bnwX7Ei5K
@@ -41,7 +38,7 @@ log:
   max_backups: 10
   max_days: 30
   compress: false
-  json_format: true
+  json_format: false
   show_line: true
   log_in_console: true
   level: debug

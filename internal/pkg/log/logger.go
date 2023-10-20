@@ -1,4 +1,4 @@
-package logutil
+package MyLog
 
 import (
 	"applet-server/internal/conf"
@@ -118,7 +118,7 @@ func NewLogger(confLog *conf.Log) log.Logger {
 	if confLog.ShowLine {
 		logger = logger.WithOptions(zap.AddCaller())
 	}
-	logger = logger.WithOptions(zap.AddCallerSkip(3))
+	logger = logger.WithOptions(zap.AddCallerSkip(2))
 	myLogger.logger = kratoszap.NewLogger(logger)
 	defaultLogger := myLogger.logger
 	log.SetLogger(defaultLogger)

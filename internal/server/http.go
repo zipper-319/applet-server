@@ -4,20 +4,20 @@ import (
 	"applet-server/api/v2/applet"
 	"applet-server/internal/conf"
 	"applet-server/internal/pkg/apiHook"
+	jwtUtil "applet-server/internal/pkg/jwt"
 	"applet-server/internal/service"
+	"github.com/go-kratos/kratos/v2/middleware/metrics"
+	"github.com/go-kratos/kratos/v2/middleware/tracing"
+	"github.com/go-kratos/kratos/v2/middleware/validate"
 
 	"github.com/go-kratos/kratos/v2/log"
-	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/transport/http"
 )
 
 // NewHTTPServer new an HTTP server.
-func NewHTTPServer(c *conf.Server, vdSer *service.VoiceDataOperationService, logger log.Logger) *http.Server {
+func NewHTTPServer(c *conf.Server, middlewares http.ServerOption, vdSer *service.VoiceDataOperationService, account *service.AccountService, logger log.Logger) *http.Server {
 	var opts = []http.ServerOption{
-		http.Middleware(
-			recovery.Recovery(),
-			apiHook.Hook(logger),
-		),
+		middlewares,
 	}
 	if c.Http.Network != "" {
 		opts = append(opts, http.Network(c.Http.Network))
@@ -30,5 +30,16 @@ func NewHTTPServer(c *conf.Server, vdSer *service.VoiceDataOperationService, log
 	}
 	srv := http.NewServer(opts...)
 	applet.RegisterVoiceDataOperationHTTPServer(srv, vdSer)
+	applet.RegisterAccountHTTPServer(srv, account)
 	return srv
+}
+
+func NewMiddlewares(logger log.Logger, appConfig *conf.App) http.ServerOption {
+	return http.Middleware(
+		validate.Validator(),
+		tracing.Server(),
+		metrics.Server(),
+		jwtUtil.Server(logger, appConfig.Auth.Key, appConfig.Auth.Expire.AsDuration()),
+		apiHook.Hook(logger),
+	)
 }

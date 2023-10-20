@@ -1,4 +1,4 @@
-package logutil
+package MyLog
 
 type LogSetting struct {
 	RootPath     string

@@ -3,7 +3,7 @@
 
 openapi: 3.0.3
 info:
-    title: VoiceDataOperation API
+    title: ""
     version: 0.0.1
 paths:
     /api/v2/voice-data/commit:
@@ -14,7 +14,9 @@ paths:
             operationId: VoiceDataOperation_Commit
             requestBody:
                 content:
-                    application/json: {}
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/applet.v2.CommitRequest'
                 required: true
             responses:
                 "200":
@@ -49,6 +51,17 @@ paths:
                 - VoiceDataOperation
             description: 获取音频录制进度，返回已录制的音频数量
             operationId: VoiceDataOperation_GetProgress
+            parameters:
+                - name: voiceType
+                  in: query
+                  schema:
+                    type: integer
+                    format: enum
+                - name: speakerSerial
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
             responses:
                 "200":
                     description: OK
@@ -62,6 +75,12 @@ paths:
                 - VoiceDataOperation
             description: 获取录音文本
             operationId: VoiceDataOperation_GetText
+            parameters:
+                - name: voiceType
+                  in: query
+                  schema:
+                    type: integer
+                    format: enum
             responses:
                 "200":
                     description: OK
@@ -88,8 +107,35 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/applet.v2.VoiceDataResData'
+    /v1/login:
+        post:
+            tags:
+                - Account
+            operationId: Account_Login
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/applet.v2.LoginReq'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/applet.v2.LoginResp'
 components:
     schemas:
+        applet.v2.CommitRequest:
+            type: object
+            properties:
+                voiceType:
+                    type: integer
+                    format: enum
+                speakerSerial:
+                    type: integer
+                    format: int32
         applet.v2.CommitResData:
             type: object
             properties:
@@ -109,9 +155,23 @@ components:
         applet.v2.GetTextResData:
             type: object
             properties:
-                textData:
-                    type: string
+                text:
+                    type: array
+                    items:
+                        type: string
                     description: 文本数据
+        applet.v2.LoginReq:
+            type: object
+            properties:
+                account:
+                    type: string
+                password:
+                    type: string
+        applet.v2.LoginResp:
+            type: object
+            properties:
+                token:
+                    type: string
         applet.v2.ProgressResData:
             type: object
             properties:
@@ -121,7 +181,7 @@ components:
                     format: int32
                 finishedTime:
                     type: string
-                    description: 已完成录制时的时间点,  未完成时该值为空  时间格式"2006-01-02"
+                    description: 时间戳
                 awaitTrain:
                     type: integer
                     description: 需要等待训练的时间  单位小时
@@ -151,4 +211,5 @@ components:
                     description: 下一条录制音频序号
                     format: int32
 tags:
+    - name: Account
     - name: VoiceDataOperation

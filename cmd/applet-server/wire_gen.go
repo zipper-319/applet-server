@@ -10,28 +10,38 @@ import (
 	"applet-server/internal/biz"
 	"applet-server/internal/conf"
 	"applet-server/internal/data"
+	"applet-server/internal/data/cache"
+	"applet-server/internal/data/s3"
+	"applet-server/internal/pkg/log"
 	"applet-server/internal/server"
 	"applet-server/internal/service"
-
 	"github.com/go-kratos/kratos/v2"
-	"github.com/go-kratos/kratos/v2/log"
+)
+
+import (
+	_ "go.uber.org/automaxprocs"
 )
 
 // Injectors from wire.go:
 
 // wireApp init kratos application.
-func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
-	dataData, cleanup, err := data.NewData(confData, logger)
+func wireApp(confServer *conf.Server, app *conf.App, confData *conf.Data, log *conf.Log) (*kratos.App, func(), error) {
+	logger := MyLog.NewLogger(log)
+	s3Service, err := s3.NewS3Service(confData, logger)
 	if err != nil {
 		return nil, nil, err
 	}
-	greeterRepo := data.NewGreeterRepo(dataData, logger)
-	greeterUsecase := biz.NewGreeterUsecase(greeterRepo, logger)
-	greeterService := service.NewGreeterService(greeterUsecase)
-	grpcServer := server.NewGRPCServer(confServer, greeterService, logger)
-	httpServer := server.NewHTTPServer(confServer, greeterService, logger)
-	app := newApp(logger, grpcServer, httpServer)
-	return app, func() {
-		cleanup()
+	client := cache.NewRedisCache(confData)
+	dataData, err := data.NewData(s3Service, client)
+	if err != nil {
+		return nil, nil, err
+	}
+	s3UseCase := biz.NewS3UseCase(dataData, logger)
+	voiceDataOperationService := service.NewVoiceDataOperationService(s3UseCase)
+	grpcServer := server.NewGRPCServer(confServer, voiceDataOperationService, logger)
+	serverOption := server.NewMiddlewares(logger, app)
+	httpServer := server.NewHTTPServer(confServer, serverOption, voiceDataOperationService, logger)
+	kratosApp := newApp(logger, grpcServer, httpServer)
+	return kratosApp, func() {
 	}, nil
 }
