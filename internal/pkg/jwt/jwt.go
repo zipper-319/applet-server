@@ -18,7 +18,7 @@ type Identifier struct{}
 type Option func(*options)
 
 var NotVerify = []string{
-	"Register",
+	"login",
 	"GetTtsConfig",
 	"GetVersion",
 	"GetSpeaker",
@@ -49,6 +49,11 @@ var (
 var keyFunc jwt.Keyfunc
 var expireTime time.Duration
 
+func init() {
+	keyFunc = KeyProvider("")
+	expireTime = time.Duration(30)
+}
+
 // Parser is a jwt parser
 type options struct {
 	signingMethod jwt.SigningMethod
@@ -67,13 +72,11 @@ func WithClaims(claims jwt.Claims) Option {
 
 func Server(logger log.Logger, jwtKey string, expire time.Duration, opts ...Option) middleware.Middleware {
 	log.NewHelper(logger).Infof("jwtKey:%s", jwtKey)
-	if jwtKey == "" {
-		panic(ErrMissingKey)
-	}
 	keyFunc = KeyProvider(jwtKey)
 	expireTime = expire
 	o := &options{
 		signingMethod: jwt.SigningMethodHS256,
+		claims:        &IdentityClaims{},
 	}
 	for _, opt := range opts {
 		opt(o)
@@ -128,7 +131,12 @@ func Server(logger log.Logger, jwtKey string, expire time.Duration, opts ...Opti
 					if tokenInfo.Method != o.signingMethod {
 						return nil, ErrUnSupportSigningMethod
 					}
-					ctx = context.WithValue(ctx, Identifier{}, tokenInfo)
+					if claims, ok := tokenInfo.Claims.(*IdentityClaims); ok {
+						ctx = context.WithValue(ctx, Identifier{}, claims)
+						log.NewHelper(logger).Infof("tokenInfo.Claims is *IdentityClaims")
+					} else {
+						log.NewHelper(logger).Error("tokenInfo.Claims is not *IdentityClaims")
+					}
 
 				}
 				return handler(ctx, req)
@@ -171,19 +179,22 @@ func KeyProvider(key string) jwt.Keyfunc {
 }
 
 type IdentityClaims struct {
-	NameId  int
-	Account string
-	Role    string
+	Username    string `json:"username"`
+	PhoneNumber string `json:"phoneNumber"`
+	Role        int    `json:"role"`
+	SessionID   string `json:"session"`
 	jwt.RegisteredClaims
 }
 
-func GetToken(identifier string) (string, error) {
+func GetToken(username, PhoneNumber string, role int) (string, error) {
 	now := time.Now()
 	id, _ := uuid.NewUUID()
 	claims := IdentityClaims{
-		Account: identifier,
+		Username:    username,
+		PhoneNumber: PhoneNumber,
+		Role:        role,
 		RegisteredClaims: jwt.RegisteredClaims{
-			Audience:  []string{identifier},
+			Audience:  []string{username},
 			ExpiresAt: jwt.NewNumericDate(now.Add(expireTime * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(now),
 			ID:        id.String(),
@@ -198,6 +209,14 @@ func ParseToken(token, key string) (*jwt.Token, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(identifier.Account)
+	fmt.Println(identifier.Username)
+	if claims, ok := tokenInfo.Claims.(*IdentityClaims); ok {
+		fmt.Println("tokenInfo.Claims is *IdentityClaims", claims.Username)
+	}
 	return tokenInfo, nil
+}
+
+func GetTokenInfo(ctx context.Context) (tokenInfo *IdentityClaims, ok bool) {
+	tokenInfo, ok = ctx.Value(Identifier{}).(*IdentityClaims)
+	return
 }

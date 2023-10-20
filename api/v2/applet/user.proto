@@ -14,15 +14,15 @@ import "google/protobuf/empty.proto";
 service  Account {
   rpc login(LoginReq) returns (LoginResp) {
     option (google.api.http) = {
-      post: "/v1/login"
-      body: "*"
+      get: "/api/v2/login"
     };
   };
 }
 
 message  LoginReq{
-  string account = 1 [(validate.rules).string.min_len = 1];
-  string password = 2 [(validate.rules).string.min_len = 1];
+  string fullName = 1 [(validate.rules).string.min_len = 1];
+  string phoneNumber = 2 [(validate.rules).string.min_len = 1];
+  string openId  = 3;
 }
 
 message LoginResp{

@@ -3,21 +3,25 @@ package service
 import (
 	pb "applet-server/api/v2/applet"
 	"applet-server/internal/biz"
+	jwtUtil "applet-server/internal/pkg/jwt"
 	"applet-server/internal/pkg/voiceText"
 	"context"
 	"encoding/base64"
 	"fmt"
+	"github.com/go-kratos/kratos/v2/log"
 	"time"
 )
 
 type VoiceDataOperationService struct {
 	pb.UnimplementedVoiceDataOperationServer
 	*biz.S3UseCase
+	*log.Helper
 }
 
-func NewVoiceDataOperationService(useCase *biz.S3UseCase) *VoiceDataOperationService {
+func NewVoiceDataOperationService(useCase *biz.S3UseCase, logger log.Logger) *VoiceDataOperationService {
 	return &VoiceDataOperationService{
 		S3UseCase: useCase,
+		Helper:    log.NewHelper(logger),
 	}
 }
 
@@ -51,7 +55,7 @@ func (s *VoiceDataOperationService) DownloadVoice(ctx context.Context, req *pb.D
 func (s *VoiceDataOperationService) Commit(ctx context.Context, req *pb.CommitRequest) (*pb.CommitResData, error) {
 	var username string
 	s3NameList := make([]string, 0, 50)
-	for i := 0; i < voiceText.VoiceDataSize[req.VoiceType.String()]; i++ {
+	for i := 0; i < voiceText.VoiceDataSize[req.VoiceType]; i++ {
 		s3NameList = append(s3NameList, fmt.Sprintf("%s/%d/%d.pcm", username, req.SpeakerSerial, i))
 	}
 	key := fmt.Sprintf("finishedTime:%s:%s:%d", username, req.VoiceType, req.SpeakerSerial)
@@ -60,7 +64,12 @@ func (s *VoiceDataOperationService) Commit(ctx context.Context, req *pb.CommitRe
 }
 
 func (s *VoiceDataOperationService) GetText(ctx context.Context, req *pb.GetTextRequest) (*pb.GetTextResData, error) {
-	content, err := voiceText.ReadText(req.VoiceType.String())
+	tokenInfo, ok := jwtUtil.GetTokenInfo(ctx)
+	if !ok {
+		return nil, jwtUtil.ErrTokenInvalid
+	}
+	s.Infof("tokenInfo: %+v", tokenInfo)
+	content, err := voiceText.ReadText(req.VoiceType)
 	if err != nil {
 		return nil, err
 	}

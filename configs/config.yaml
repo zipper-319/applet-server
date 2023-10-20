@@ -8,13 +8,13 @@ server:
 
 app:
   auth:
-    key: sQ9QxhasVErjykdG
+    key:
     expire: 150000000s
 
 data:
   database:
     driver: mysql
-    source: root:@tcp(172.16.23.33:3306)/test
+    source: root:@tcp(172.16.23.33:3306)/mp
   redis:
     addr: 172.16.23.33:9527
     password: cloudminds88

@@ -6,6 +6,24 @@ info:
     title: ""
     version: 0.0.1
 paths:
+    /api/v2/login:
+        post:
+            tags:
+                - Account
+            operationId: Account_Login
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/applet.v2.LoginReq'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/applet.v2.LoginResp'
     /api/v2/voice-data/commit:
         post:
             tags:
@@ -107,24 +125,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/applet.v2.VoiceDataResData'
-    /v1/login:
-        post:
-            tags:
-                - Account
-            operationId: Account_Login
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/applet.v2.LoginReq'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/applet.v2.LoginResp'
 components:
     schemas:
         applet.v2.CommitRequest:
@@ -163,9 +163,11 @@ components:
         applet.v2.LoginReq:
             type: object
             properties:
-                account:
+                fullName:
                     type: string
-                password:
+                phoneNumber:
+                    type: string
+                openId:
                     type: string
         applet.v2.LoginResp:
             type: object

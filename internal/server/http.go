@@ -28,7 +28,10 @@ func NewHTTPServer(c *conf.Server, middlewares http.ServerOption, vdSer *service
 	if c.Http.Timeout != nil {
 		opts = append(opts, http.Timeout(c.Http.Timeout.AsDuration()))
 	}
+	opts = append(opts, http.ResponseEncoder(apiHook.ResponseEncoder))
+	opts = append(opts, http.ErrorEncoder(apiHook.ErrorEncoder))
 	srv := http.NewServer(opts...)
+
 	applet.RegisterVoiceDataOperationHTTPServer(srv, vdSer)
 	applet.RegisterAccountHTTPServer(srv, account)
 	return srv

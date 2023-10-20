@@ -3,7 +3,6 @@ package voiceText
 import (
 	"applet-server/api/v2/applet"
 	"bufio"
-	"io"
 	"os"
 	"path"
 	"path/filepath"
@@ -11,46 +10,40 @@ import (
 	"strings"
 )
 
-var VoiceDataSize map[string]int
+var VoiceDataSize map[applet.VoiceType]int
+var voiceDir string
 
 func init() {
 	var (
 		err     error
 		content []string
 	)
-	VoiceDataSize = make(map[string]int, 0)
+	VoiceDataSize = make(map[applet.VoiceType]int, 0)
 	_, fileName, _, ok := runtime.Caller(0)
 	if !ok {
 		panic("runtime.Caller failed")
 	}
-	dir := path.Dir(fileName)
+	voiceDir = path.Dir(fileName)
 
-	for _, v := range applet.VoiceType_name {
-		content, err = ReadText(filepath.Join(dir, v))
+	for _, v := range applet.VoiceType_value {
+		content, err = ReadText(applet.VoiceType(v))
 		if err != nil {
 			panic(err)
 		}
-		VoiceDataSize[v] = len(content)
+		VoiceDataSize[applet.VoiceType(v)] = len(content)
 	}
 }
 
-func ReadText(fileType string) ([]string, error) {
-	f, err := os.Open(fileType + ".txt")
+func ReadText(fileType applet.VoiceType) ([]string, error) {
+	fileName := filepath.Join(voiceDir, fileType.String()+".txt")
+	f, err := os.Open(fileName)
 	if err != nil {
 		return nil, err
 	}
-	r := bufio.NewReader(f)
+	scanner := bufio.NewScanner(f)
 	var lines []string
-	for {
-		lineBytes, err := r.ReadBytes('\n')
-		line := strings.TrimSpace(string(lineBytes))
-		if err != nil && err != io.EOF {
-			return nil, err
-		}
-		if err == io.EOF {
-			break
-		}
-		lines = append(lines, line)
+	for scanner.Scan() {
+		lines = append(lines, strings.TrimSpace(scanner.Text()))
 	}
 	return lines, nil
 }
