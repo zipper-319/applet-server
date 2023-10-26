@@ -38,6 +38,7 @@ func NewHTTPServer(c *conf.Server, middlewares http.ServerOption, vdSer *service
 
 	applet.RegisterVoiceDataOperationHTTPServer(srv, vdSer)
 	applet.RegisterAccountHTTPServer(srv, account)
+	RegisterFormDataHandler(srv, vdSer)
 	return srv
 }
 

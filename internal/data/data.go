@@ -8,6 +8,7 @@ import (
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/atomic"
 	"gorm.io/gorm"
+	"io"
 
 	"github.com/google/wire"
 )
@@ -77,4 +78,9 @@ type ChatServerMessage struct {
 	IsEnd       bool               `son:"is_end,omitempty"`
 	IsSuccess   bool               `json:"is_success,omitempty"`
 	ErrMsg      string             `json:"err_msg,omitempty"`
+}
+
+type FileObject struct {
+	File     io.Reader
+	FileName string
 }

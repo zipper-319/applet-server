@@ -22,6 +22,7 @@ var NotVerify = []string{
 	"GetTtsConfig",
 	"GetVersion",
 	"GetSpeaker",
+	"UploadFiles",
 }
 
 const (

@@ -82,11 +82,6 @@ paths:
                   schema:
                     type: integer
                     format: enum
-                - name: speakerSerial
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
             responses:
                 "200":
                     description: OK
@@ -140,9 +135,8 @@ components:
                 voiceType:
                     type: integer
                     format: enum
-                speakerSerial:
-                    type: integer
-                    format: int32
+                speaker:
+                    type: string
         applet.v2.CommitResData:
             type: object
             properties:
@@ -198,10 +192,6 @@ components:
                 sequence:
                     type: integer
                     description: 序号
-                    format: int32
-                speakerSerial:
-                    type: integer
-                    description: 发音人编号
                     format: int32
         applet.v2.VoiceDataResData:
             type: object

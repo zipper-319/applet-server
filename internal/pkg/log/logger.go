@@ -15,6 +15,7 @@ import (
 	"time"
 )
 
+var defaultLogger = log.DefaultLogger
 var ProviderSet = wire.NewSet(NewLogger)
 
 type MyLogger struct {
@@ -120,7 +121,7 @@ func NewLogger(confLog *conf.Log) log.Logger {
 	}
 	logger = logger.WithOptions(zap.AddCallerSkip(2))
 	myLogger.logger = kratoszap.NewLogger(logger)
-	defaultLogger := myLogger.logger
+	defaultLogger = myLogger.logger
 	log.SetLogger(defaultLogger)
 	return myLogger.logger
 }

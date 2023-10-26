@@ -49,6 +49,9 @@ service VoiceDataOperation {
       get: "/api/v2/voice-data/text/get",
     };
   }
+
+  rpc UploadFiles(UploadFilesRequest) returns (google.protobuf.Empty){
+  }
 }
 
 enum VoiceType{
@@ -64,8 +67,6 @@ message VoiceDataReqData {
   string voice = 2;
   // 序号
   int32  sequence = 3;
-  // 发音人编号
-  int32  speaker_serial = 4;
 }
 
 message VoiceDataResData {
@@ -75,7 +76,6 @@ message VoiceDataResData {
 
 message ProgressRequest{
   VoiceType  voice_type = 1;
-  int32  speaker_serial = 2;
 }
 
 message ProgressResData {
@@ -99,7 +99,7 @@ message DownloadResData {
 
 message CommitRequest {
   VoiceType  voice_type = 1;
-  int32  speaker_serial = 2;
+  string     speaker = 2;   // 发音人
 }
 
 message CommitResData {
@@ -117,3 +117,9 @@ message GetTextResData {
   // 文本数据
   repeated string  text = 1;
 }
+
+message UploadFilesRequest{
+  string speaker = 1;
+  string file = 2;
+}
+

@@ -82,3 +82,12 @@ message ChatParameter{
   string language = 6;
 }
 
+enum  ChatInterruptionType {
+  Unknown = 0;
+}
+
+enum ChatResponseType {
+  ASRText = 0;
+  AnswerText = 1;
+  AnswerVoice = 2;
+}

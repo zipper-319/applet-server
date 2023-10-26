@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -24,6 +25,7 @@ const (
 	VoiceDataOperation_DownloadVoice_FullMethodName = "/applet.v2.VoiceDataOperation/downloadVoice"
 	VoiceDataOperation_Commit_FullMethodName        = "/applet.v2.VoiceDataOperation/commit"
 	VoiceDataOperation_GetText_FullMethodName       = "/applet.v2.VoiceDataOperation/getText"
+	VoiceDataOperation_UploadFiles_FullMethodName   = "/applet.v2.VoiceDataOperation/UploadFiles"
 )
 
 // VoiceDataOperationClient is the client API for VoiceDataOperation service.
@@ -40,6 +42,7 @@ type VoiceDataOperationClient interface {
 	Commit(ctx context.Context, in *CommitRequest, opts ...grpc.CallOption) (*CommitResData, error)
 	// 获取录音文本
 	GetText(ctx context.Context, in *GetTextRequest, opts ...grpc.CallOption) (*GetTextResData, error)
+	UploadFiles(ctx context.Context, in *UploadFilesRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type voiceDataOperationClient struct {
@@ -95,6 +98,15 @@ func (c *voiceDataOperationClient) GetText(ctx context.Context, in *GetTextReque
 	return out, nil
 }
 
+func (c *voiceDataOperationClient) UploadFiles(ctx context.Context, in *UploadFilesRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, VoiceDataOperation_UploadFiles_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // VoiceDataOperationServer is the server API for VoiceDataOperation service.
 // All implementations must embed UnimplementedVoiceDataOperationServer
 // for forward compatibility
@@ -109,6 +121,7 @@ type VoiceDataOperationServer interface {
 	Commit(context.Context, *CommitRequest) (*CommitResData, error)
 	// 获取录音文本
 	GetText(context.Context, *GetTextRequest) (*GetTextResData, error)
+	UploadFiles(context.Context, *UploadFilesRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedVoiceDataOperationServer()
 }
 
@@ -130,6 +143,9 @@ func (UnimplementedVoiceDataOperationServer) Commit(context.Context, *CommitRequ
 }
 func (UnimplementedVoiceDataOperationServer) GetText(context.Context, *GetTextRequest) (*GetTextResData, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetText not implemented")
+}
+func (UnimplementedVoiceDataOperationServer) UploadFiles(context.Context, *UploadFilesRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UploadFiles not implemented")
 }
 func (UnimplementedVoiceDataOperationServer) mustEmbedUnimplementedVoiceDataOperationServer() {}
 
@@ -234,6 +250,24 @@ func _VoiceDataOperation_GetText_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _VoiceDataOperation_UploadFiles_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UploadFilesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(VoiceDataOperationServer).UploadFiles(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: VoiceDataOperation_UploadFiles_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(VoiceDataOperationServer).UploadFiles(ctx, req.(*UploadFilesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // VoiceDataOperation_ServiceDesc is the grpc.ServiceDesc for VoiceDataOperation service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -260,6 +294,10 @@ var VoiceDataOperation_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "getText",
 			Handler:    _VoiceDataOperation_GetText_Handler,
+		},
+		{
+			MethodName: "UploadFiles",
+			Handler:    _VoiceDataOperation_UploadFiles_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
