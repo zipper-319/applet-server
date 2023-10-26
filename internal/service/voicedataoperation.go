@@ -12,6 +12,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/redis/go-redis/v9"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"time"
 )
@@ -52,13 +53,19 @@ func (s *VoiceDataOperationService) GetProgress(ctx context.Context, req *pb.Pro
 	}
 	s.Infof("tokenInfo: %+v", tokenInfo)
 	username := tokenInfo.Username
-	key := fmt.Sprintf("finishedTime:%s:%s", username, req.VoiceType)
-	finishedTime, err := s.S3UseCase.Data.RedisClient.Get(ctx, key).Int64()
-	if err != nil {
-		return nil, err
+
+	progressKey := fmt.Sprintf("%s:%s:%s", util.REDIS_KEY_AWS_S3_USER_Prefix, username, req.VoiceType)
+	sequence, err := s.S3UseCase.Data.RedisClient.Get(ctx, progressKey).Int64()
+
+	finishedKey := fmt.Sprintf("finishedTime:%s:%s", username, req.VoiceType)
+	finishedTime, err := s.S3UseCase.Data.RedisClient.Get(ctx, finishedKey).Int64()
+	if err == redis.Nil {
+		finishedTime = 0
+	} else {
+		return nil, errors.New("redis error")
 	}
 	return &pb.ProgressResData{
-		CurrentNumber: 0,
+		CurrentNumber: int32(sequence),
 		FinishedTime:  finishedTime,
 		AwaitTrain:    0,
 	}, nil
