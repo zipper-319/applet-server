@@ -38,10 +38,11 @@ func (u *S3UseCase) Upload(ctx context.Context, voiceData []byte, sequence int, 
 	// 上传音频到aws s3对象中
 	fileName := fmt.Sprintf("%s/%d.pcm", username, sequence)
 	u.Debug("fileName:", fileName)
-	err = u.S3.Uploading(ctx, voiceData, fileName)
+	url, err := u.Client.Uploading(ctx, voiceData, fileName)
 	if err != nil {
 		return err
 	}
+	log.Info("url:", url)
 
 	// 判断是否是重新录制的视频
 	if sequence == nextSequence {

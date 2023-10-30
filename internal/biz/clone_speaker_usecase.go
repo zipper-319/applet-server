@@ -36,13 +36,21 @@ func (uc *CloneSpeakerUseCase) GetSpeakerList(ctx context.Context, username stri
 	return &applet.GetCloneSpeakerResult{
 		CloneSpeakerList: speakerList,
 		TrainTime:        util.DefaultTrainDuration,
-	},nil
+	}, nil
 }
 
-func (uc *CloneSpeakerUseCase) UpdateSpeaker(ctx context.Context, req *applet.UpdateCloneSpeakerRequest) error{
+func (uc *CloneSpeakerUseCase) UpdateSpeaker(ctx context.Context, req *applet.UpdateCloneSpeakerRequest) error {
 	return uc.repo.Update(ctx, req.Id, req.SpeakerName)
 }
 
-func (uc *CloneSpeakerUseCase) DelSpeaker(ctx context.Context, req *applet.DelCloneSpeakerRequest)error{
+func (uc *CloneSpeakerUseCase) DelSpeaker(ctx context.Context, req *applet.DelCloneSpeakerRequest) error {
 	return uc.repo.Delete(ctx, req.Id)
+}
+
+func (uc *CloneSpeakerUseCase) CreateSpeaker(ctx context.Context, speaker, username string) error {
+	return uc.repo.Create(ctx, &mysql.CloneSpeaker{
+		SpeakerName:      speaker,
+		SubmittedSpeaker: speaker,
+		Username:         username,
+	})
 }

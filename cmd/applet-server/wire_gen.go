@@ -11,6 +11,7 @@ import (
 	"applet-server/internal/conf"
 	"applet-server/internal/data"
 	"applet-server/internal/data/cache"
+	"applet-server/internal/data/minio"
 	"applet-server/internal/data/mysql"
 	"applet-server/internal/data/s3"
 	"applet-server/internal/pkg/log"
@@ -34,17 +35,19 @@ func wireApp(confServer *conf.Server, app *conf.App, confData *conf.Data, log *c
 	}
 	client := cache.NewRedisCache(confData)
 	db := mysql.NewDataDB(confData)
-	dataData, err := data.NewData(s3Service, client, db)
+	minioClient := minio.NewMinioClient(confData)
+	dataData, err := data.NewData(s3Service, client, db, minioClient)
 	if err != nil {
 		return nil, nil, err
 	}
 	s3UseCase := biz.NewS3UseCase(dataData, logger)
-	voiceDataOperationService := service.NewVoiceDataOperationService(s3UseCase, logger)
+	cloneSpeakerUseCase := biz.NewCloneSpeakerUseCase(dataData)
+	voiceDataOperationService := service.NewVoiceDataOperationService(s3UseCase, cloneSpeakerUseCase, logger)
 	grpcServer := server.NewGRPCServer(confServer, voiceDataOperationService, logger)
 	serverOption := server.NewMiddlewares(logger, app)
 	userUseCase := biz.NewUserUseCase(dataData, logger)
 	accountService := service.NewAccountService(userUseCase)
-	cloneSpeakerService := service.NewCloneSpeakerService()
+	cloneSpeakerService := service.NewCloneSpeakerService(cloneSpeakerUseCase)
 	httpServer := server.NewHTTPServer(confServer, serverOption, voiceDataOperationService, accountService, cloneSpeakerService, logger)
 	kratosApp := newApp(logger, grpcServer, httpServer)
 	return kratosApp, func() {

@@ -24,12 +24,14 @@ type VoiceDataOperationService struct {
 	pb.UnimplementedVoiceDataOperationServer
 	*biz.S3UseCase
 	*log.Helper
+	speaker *biz.CloneSpeakerUseCase
 }
 
-func NewVoiceDataOperationService(useCase *biz.S3UseCase, logger log.Logger) *VoiceDataOperationService {
+func NewVoiceDataOperationService(useCase *biz.S3UseCase, speakerUseCase *biz.CloneSpeakerUseCase, logger log.Logger) *VoiceDataOperationService {
 	return &VoiceDataOperationService{
 		S3UseCase: useCase,
 		Helper:    log.NewHelper(logger),
+		speaker:   speakerUseCase,
 	}
 }
 
@@ -89,8 +91,12 @@ func (s *VoiceDataOperationService) Commit(ctx context.Context, req *pb.CommitRe
 	key := fmt.Sprintf("finishedTime:%s:%s", username, req.Speaker)
 
 	if s.S3UseCase.Data.RedisClient.SetNX(ctx, key, time.Now().Unix(), 0).Val() {
+		if err := s.speaker.CreateSpeaker(ctx, req.Speaker, username); err != nil {
+			return nil, err
+		}
 		progressKey := fmt.Sprintf("%s:%s:%s", util.REDIS_KEY_AWS_S3_USER_Prefix, username, req.VoiceType)
 		s.Data.RedisClient.Del(ctx, progressKey)
+
 		return &pb.CommitResData{}, nil
 	} else {
 		return nil, errors.New("speaker has existed")
