@@ -62,7 +62,7 @@ enum VoiceType{
 }
 
 message VoiceDataReqData {
-  VoiceType  voice_type = 1;
+  VoiceType  voice_type = 1 ;
   // 音频,base64编码
   string voice = 2;
   // 序号

@@ -22,7 +22,7 @@ func NewS3UseCase(data *data.Data, logger log.Logger) *S3UseCase {
 
 func (u *S3UseCase) Upload(ctx context.Context, voiceData []byte, sequence int, username string, voiceType applet.VoiceType) error {
 
-	u.Infof("sequence:%d, username: %s, data length:%d, speakerSerial", sequence, username, len(voiceData))
+	u.Infof("sequence:%d, username: %s, data length:%d, voiceType:%s", sequence, username, len(voiceData), voiceType)
 	key := fmt.Sprintf("%s:%s:%s", util.REDIS_KEY_AWS_S3_USER_Prefix, username, voiceType)
 	nextSequence, err := u.RedisClient.Get(ctx, key).Int()
 	if err != nil {
@@ -36,7 +36,7 @@ func (u *S3UseCase) Upload(ctx context.Context, voiceData []byte, sequence int, 
 		return errors.New("sequence error")
 	}
 	// 上传音频到aws s3对象中
-	fileName := fmt.Sprintf("%s/%d.pcm", username, sequence)
+	fileName := fmt.Sprintf("%s/%s/%d.wav", username, voiceType.String(), sequence)
 	u.Debug("fileName:", fileName)
 	url, err := u.Client.Uploading(ctx, voiceData, fileName)
 	if err != nil {

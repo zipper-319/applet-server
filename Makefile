@@ -2,6 +2,7 @@ GOHOSTOS:=$(shell go env GOHOSTOS)
 GOPATH:=$(shell go env GOPATH)
 VERSION=$(shell git describe --tags --always)
 PROJECT=$(shell basename `pwd`)
+API_PB_GO_FILES=$(shell find api -type f -name '*.pb.go')
 
 ifeq ($(GOHOSTOS), windows)
 	#the `find.exe` is different from `find` in bash/shell.
@@ -42,8 +43,9 @@ api:
  	       --go_out=paths=source_relative:./api \
  	       --go-http_out=paths=source_relative:./api \
  	       --go-grpc_out=paths=source_relative:./api \
-	       --openapi_out=fq_schema_naming=true,default_response=false:. \
+	       --openapi_out=openapi_naming_strategy=legacy,default_response=false:. \
 	       $(API_PROTO_FILES)
+	sed -i  "s/,omitempty//g"  $(API_PB_GO_FILES)
 
 .PHONY: build
 build:

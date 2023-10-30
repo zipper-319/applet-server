@@ -30,9 +30,9 @@ type LoginReq struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	FullName    string `protobuf:"bytes,1,opt,name=fullName,proto3" json:"fullName,omitempty"`
-	PhoneNumber string `protobuf:"bytes,2,opt,name=phoneNumber,proto3" json:"phoneNumber,omitempty"`
-	OpenId      string `protobuf:"bytes,3,opt,name=openId,proto3" json:"openId,omitempty"`
+	FullName    string `protobuf:"bytes,1,opt,name=fullName,proto3" json:"fullName"`
+	PhoneNumber string `protobuf:"bytes,2,opt,name=phoneNumber,proto3" json:"phoneNumber"`
+	OpenId      string `protobuf:"bytes,3,opt,name=openId,proto3" json:"openId"`
 }
 
 func (x *LoginReq) Reset() {
@@ -93,7 +93,7 @@ type LoginResp struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Token string `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	Token string `protobuf:"bytes,1,opt,name=token,proto3" json:"token"`
 }
 
 func (x *LoginResp) Reset() {

@@ -327,11 +327,11 @@ type ChatWSReq struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	RobotId   int32  `protobuf:"varint,1,opt,name=robot_id,json=robotId,proto3" json:"robot_id,omitempty"`
-	Position  string `protobuf:"bytes,2,opt,name=position,proto3" json:"position,omitempty"`
-	Language  string `protobuf:"bytes,3,opt,name=language,proto3" json:"language,omitempty"`
-	AgentId   int32  `protobuf:"varint,4,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
-	SessionId string `protobuf:"bytes,5,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
+	RobotId   int32  `protobuf:"varint,1,opt,name=robot_id,json=robotId,proto3" json:"robot_id"`
+	Position  string `protobuf:"bytes,2,opt,name=position,proto3" json:"position"`
+	Language  string `protobuf:"bytes,3,opt,name=language,proto3" json:"language"`
+	AgentId   int32  `protobuf:"varint,4,opt,name=agent_id,json=agentId,proto3" json:"agent_id"`
+	SessionId string `protobuf:"bytes,5,opt,name=session_id,json=sessionId,proto3" json:"session_id"`
 }
 
 func (x *ChatWSReq) Reset() {
@@ -406,9 +406,9 @@ type ChatWSResp struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Code     int32  `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
-	Message  string `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
-	Metadata string `protobuf:"bytes,3,opt,name=Metadata,proto3" json:"Metadata,omitempty"` // 根据后续方案而定，可能是实时音频流地址。
+	Code     int32  `protobuf:"varint,1,opt,name=code,proto3" json:"code"`
+	Message  string `protobuf:"bytes,2,opt,name=message,proto3" json:"message"`
+	Metadata string `protobuf:"bytes,3,opt,name=Metadata,proto3" json:"Metadata"` // 根据后续方案而定，可能是实时音频流地址。
 }
 
 func (x *ChatWSResp) Reset() {
@@ -469,10 +469,10 @@ type ChatClientMessage struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Content string      `protobuf:"bytes,1,opt,name=content,proto3" json:"content,omitempty"`
-	Type    MessageType `protobuf:"varint,2,opt,name=type,proto3,enum=applet.v2.MessageType" json:"type,omitempty"`
-	TraceId string      `protobuf:"bytes,3,opt,name=trace_id,json=traceId,proto3" json:"trace_id,omitempty"`
-	IsEnd   bool        `protobuf:"varint,4,opt,name=is_end,json=isEnd,proto3" json:"is_end,omitempty"` // 会话是否结束
+	Content string      `protobuf:"bytes,1,opt,name=content,proto3" json:"content"`
+	Type    MessageType `protobuf:"varint,2,opt,name=type,proto3,enum=applet.v2.MessageType" json:"type"`
+	TraceId string      `protobuf:"bytes,3,opt,name=trace_id,json=traceId,proto3" json:"trace_id"`
+	IsEnd   bool        `protobuf:"varint,4,opt,name=is_end,json=isEnd,proto3" json:"is_end"` // 会话是否结束
 }
 
 func (x *ChatClientMessage) Reset() {
@@ -540,11 +540,11 @@ type ChatServerMessage struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	ServiceType ServiceType `protobuf:"varint,1,opt,name=service_type,json=serviceType,proto3,enum=applet.v2.ServiceType" json:"service_type,omitempty"`
-	Content     []byte      `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`
-	IsEnd       bool        `protobuf:"varint,3,opt,name=is_end,json=isEnd,proto3" json:"is_end,omitempty"`
-	IsSuccess   bool        `protobuf:"varint,4,opt,name=is_success,json=isSuccess,proto3" json:"is_success,omitempty"`
-	ErrMsg      string      `protobuf:"bytes,5,opt,name=err_msg,json=errMsg,proto3" json:"err_msg,omitempty"`
+	ServiceType ServiceType `protobuf:"varint,1,opt,name=service_type,json=serviceType,proto3,enum=applet.v2.ServiceType" json:"service_type"`
+	Content     []byte      `protobuf:"bytes,2,opt,name=content,proto3" json:"content"`
+	IsEnd       bool        `protobuf:"varint,3,opt,name=is_end,json=isEnd,proto3" json:"is_end"`
+	IsSuccess   bool        `protobuf:"varint,4,opt,name=is_success,json=isSuccess,proto3" json:"is_success"`
+	ErrMsg      string      `protobuf:"bytes,5,opt,name=err_msg,json=errMsg,proto3" json:"err_msg"`
 }
 
 func (x *ChatServerMessage) Reset() {
@@ -619,12 +619,12 @@ type ChatParameter struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Speed    int32  `protobuf:"varint,1,opt,name=speed,proto3" json:"speed,omitempty"`
-	Volume   int32  `protobuf:"varint,2,opt,name=volume,proto3" json:"volume,omitempty"`
-	Pitch    int32  `protobuf:"varint,3,opt,name=pitch,proto3" json:"pitch,omitempty"`
-	Speaker  string `protobuf:"bytes,4,opt,name=speaker,proto3" json:"speaker,omitempty"`
-	Style    string `protobuf:"bytes,5,opt,name=style,proto3" json:"style,omitempty"`
-	Language string `protobuf:"bytes,6,opt,name=language,proto3" json:"language,omitempty"`
+	Speed    int32  `protobuf:"varint,1,opt,name=speed,proto3" json:"speed"`
+	Volume   int32  `protobuf:"varint,2,opt,name=volume,proto3" json:"volume"`
+	Pitch    int32  `protobuf:"varint,3,opt,name=pitch,proto3" json:"pitch"`
+	Speaker  string `protobuf:"bytes,4,opt,name=speaker,proto3" json:"speaker"`
+	Style    string `protobuf:"bytes,5,opt,name=style,proto3" json:"style"`
+	Language string `protobuf:"bytes,6,opt,name=language,proto3" json:"language"`
 }
 
 func (x *ChatParameter) Reset() {

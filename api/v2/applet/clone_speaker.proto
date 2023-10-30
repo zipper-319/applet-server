@@ -51,20 +51,20 @@ service CloneSpeaker {
 message GetCloneSpeakerResult {
   message  CloneSpeaker {
     int64  id = 1;
-    string speaker_name = 2;
-    bool   is_finish = 3;
-    string description = 4;
-    int64 create_time = 5;
-    int64 update_time = 6;
+    string speaker_name = 2 [json_name = "speaker_name"];
+    bool   is_finish = 3 [json_name = "is_finish"];
+    string description = 4  [json_name = "description"];
+    int64 create_time = 5 [json_name = "create_time"];
+    int64 update_time = 6 [json_name = "update_time"];
   }
-  repeated CloneSpeaker clone_speaker_list = 1;
-  int32    train_time = 2;
+  repeated CloneSpeaker clone_speaker_list = 1 [json_name = "clone_speaker_list"];
+  int32    train_time = 2 [json_name = "train_time"];
 }
 
 message UpdateCloneSpeakerRequest{
   int64  id = 1;
-  string speaker_name = 2;
-  string description = 4;
+  string speaker_name = 2 [json_name = "speaker_name"];
+  string description = 4 [json_name = "description"];
 }
 
 

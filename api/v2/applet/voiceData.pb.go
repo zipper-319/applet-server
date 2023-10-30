@@ -82,11 +82,11 @@ type VoiceDataReqData struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	VoiceType VoiceType `protobuf:"varint,1,opt,name=voice_type,json=voiceType,proto3,enum=applet.v2.VoiceType" json:"voice_type,omitempty"`
+	VoiceType VoiceType `protobuf:"varint,1,opt,name=voice_type,json=voiceType,proto3,enum=applet.v2.VoiceType" json:"voice_type"`
 	// 音频,base64编码
-	Voice string `protobuf:"bytes,2,opt,name=voice,proto3" json:"voice,omitempty"`
+	Voice string `protobuf:"bytes,2,opt,name=voice,proto3" json:"voice"`
 	// 序号
-	Sequence int32 `protobuf:"varint,3,opt,name=sequence,proto3" json:"sequence,omitempty"`
+	Sequence int32 `protobuf:"varint,3,opt,name=sequence,proto3" json:"sequence"`
 }
 
 func (x *VoiceDataReqData) Reset() {
@@ -148,7 +148,7 @@ type VoiceDataResData struct {
 	unknownFields protoimpl.UnknownFields
 
 	// 下一条录制音频序号
-	NextSequence int32 `protobuf:"varint,3,opt,name=next_sequence,json=nextSequence,proto3" json:"next_sequence,omitempty"`
+	NextSequence int32 `protobuf:"varint,3,opt,name=next_sequence,json=nextSequence,proto3" json:"next_sequence"`
 }
 
 func (x *VoiceDataResData) Reset() {
@@ -195,7 +195,7 @@ type ProgressRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	VoiceType VoiceType `protobuf:"varint,1,opt,name=voice_type,json=voiceType,proto3,enum=applet.v2.VoiceType" json:"voice_type,omitempty"`
+	VoiceType VoiceType `protobuf:"varint,1,opt,name=voice_type,json=voiceType,proto3,enum=applet.v2.VoiceType" json:"voice_type"`
 }
 
 func (x *ProgressRequest) Reset() {
@@ -243,9 +243,9 @@ type ProgressResData struct {
 	unknownFields protoimpl.UnknownFields
 
 	// 已录制的数量
-	CurrentNumber int32 `protobuf:"varint,2,opt,name=current_number,json=currentNumber,proto3" json:"current_number,omitempty"`
+	CurrentNumber int32 `protobuf:"varint,2,opt,name=current_number,json=currentNumber,proto3" json:"current_number"`
 	// 时间戳
-	FinishedTime int64 `protobuf:"varint,3,opt,name=finished_time,json=finishedTime,proto3" json:"finished_time,omitempty"`
+	FinishedTime int64 `protobuf:"varint,3,opt,name=finished_time,json=finishedTime,proto3" json:"finished_time"`
 }
 
 func (x *ProgressResData) Reset() {
@@ -300,7 +300,7 @@ type DownloadReqData struct {
 	unknownFields protoimpl.UnknownFields
 
 	// 序号
-	Sequence int32 `protobuf:"varint,2,opt,name=sequence,proto3" json:"sequence,omitempty"`
+	Sequence int32 `protobuf:"varint,2,opt,name=sequence,proto3" json:"sequence"`
 }
 
 func (x *DownloadReqData) Reset() {
@@ -348,7 +348,7 @@ type DownloadResData struct {
 	unknownFields protoimpl.UnknownFields
 
 	// 音频数据，base64编码
-	VoiceData string `protobuf:"bytes,2,opt,name=voiceData,proto3" json:"voiceData,omitempty"`
+	VoiceData string `protobuf:"bytes,2,opt,name=voiceData,proto3" json:"voiceData"`
 }
 
 func (x *DownloadResData) Reset() {
@@ -395,8 +395,8 @@ type CommitRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	VoiceType VoiceType `protobuf:"varint,1,opt,name=voice_type,json=voiceType,proto3,enum=applet.v2.VoiceType" json:"voice_type,omitempty"`
-	Speaker   string    `protobuf:"bytes,2,opt,name=speaker,proto3" json:"speaker,omitempty"` // 发音人
+	VoiceType VoiceType `protobuf:"varint,1,opt,name=voice_type,json=voiceType,proto3,enum=applet.v2.VoiceType" json:"voice_type"`
+	Speaker   string    `protobuf:"bytes,2,opt,name=speaker,proto3" json:"speaker"` // 发音人
 }
 
 func (x *CommitRequest) Reset() {
@@ -451,9 +451,9 @@ type CommitResData struct {
 	unknownFields protoimpl.UnknownFields
 
 	// 完成时间点  时间格式"2006-01-02"
-	FinishedTime string `protobuf:"bytes,2,opt,name=finished_time,json=finishedTime,proto3" json:"finished_time,omitempty"`
+	FinishedTime string `protobuf:"bytes,2,opt,name=finished_time,json=finishedTime,proto3" json:"finished_time"`
 	// 需要等待训练的时间  单位小时
-	AwaitTrain int32 `protobuf:"varint,3,opt,name=await_train,json=awaitTrain,proto3" json:"await_train,omitempty"`
+	AwaitTrain int32 `protobuf:"varint,3,opt,name=await_train,json=awaitTrain,proto3" json:"await_train"`
 }
 
 func (x *CommitResData) Reset() {
@@ -507,7 +507,7 @@ type GetTextRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	VoiceType VoiceType `protobuf:"varint,1,opt,name=voice_type,json=voiceType,proto3,enum=applet.v2.VoiceType" json:"voice_type,omitempty"`
+	VoiceType VoiceType `protobuf:"varint,1,opt,name=voice_type,json=voiceType,proto3,enum=applet.v2.VoiceType" json:"voice_type"`
 }
 
 func (x *GetTextRequest) Reset() {
@@ -555,7 +555,7 @@ type GetTextResData struct {
 	unknownFields protoimpl.UnknownFields
 
 	// 文本数据
-	Text []string `protobuf:"bytes,1,rep,name=text,proto3" json:"text,omitempty"`
+	Text []string `protobuf:"bytes,1,rep,name=text,proto3" json:"text"`
 }
 
 func (x *GetTextResData) Reset() {
@@ -602,8 +602,8 @@ type UploadFilesRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Speaker string `protobuf:"bytes,1,opt,name=speaker,proto3" json:"speaker,omitempty"`
-	File    string `protobuf:"bytes,2,opt,name=file,proto3" json:"file,omitempty"`
+	Speaker string `protobuf:"bytes,1,opt,name=speaker,proto3" json:"speaker"`
+	File    string `protobuf:"bytes,2,opt,name=file,proto3" json:"file"`
 }
 
 func (x *UploadFilesRequest) Reset() {

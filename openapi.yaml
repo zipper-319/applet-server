@@ -203,11 +203,11 @@ components:
         applet.v2.GetCloneSpeakerResult:
             type: object
             properties:
-                cloneSpeakerList:
+                clone_speaker_list:
                     type: array
                     items:
                         $ref: '#/components/schemas/applet.v2.GetCloneSpeakerResult_CloneSpeaker'
-                trainTime:
+                train_time:
                     type: integer
                     format: int32
         applet.v2.GetCloneSpeakerResult_CloneSpeaker:
@@ -215,15 +215,15 @@ components:
             properties:
                 id:
                     type: string
-                speakerName:
+                speaker_name:
                     type: string
-                isFinish:
+                is_finish:
                     type: boolean
                 description:
                     type: string
-                createTime:
+                create_time:
                     type: string
-                updateTime:
+                update_time:
                     type: string
         applet.v2.GetTextResData:
             type: object
@@ -253,7 +253,7 @@ components:
             properties:
                 id:
                     type: string
-                speakerName:
+                speaker_name:
                     type: string
                 description:
                     type: string
