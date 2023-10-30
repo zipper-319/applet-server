@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package applet.v2;
+option go_package = "applet-server/api/v2/applet";
+
+
+import "google/api/annotations.proto";
+import "validate/validate.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "options/gorm.proto";
+import "google/protobuf/empty.proto";
+
+
+service CloneSpeaker {
+  rpc GetCloneSpeaker (google.protobuf.Empty) returns (GetCloneSpeakerResult){
+    option (google.api.http) = {
+      get: "/api/v2/clone-speaker/get-list",
+    };
+
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "get-clone-speaker"
+      description: "获取克隆人发音人"
+    };
+  }
+
+  rpc UpdateCloneSpeaker (UpdateCloneSpeakerRequest) returns (google.protobuf.Empty){
+    option (google.api.http) = {
+      post: "/api/v2/clone-speaker/update",
+      body: "*"
+    };
+
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "update-clone-speaker"
+      description: "更新克隆发音人"
+    };
+  }
+
+  rpc DelCloneSpeaker (DelCloneSpeakerRequest) returns (google.protobuf.Empty){
+    option (google.api.http) = {
+      post: "/api/v2/clone-speaker/del",
+      body: "*"
+    };
+
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "update-clone-speaker"
+      description: "删除克隆发音人"
+    };
+  }
+}
+
+message GetCloneSpeakerResult {
+  message  CloneSpeaker {
+    int64  id = 1;
+    string speaker_name = 2;
+    bool   is_finish = 3;
+    string description = 4;
+    int64 create_time = 5;
+    int64 update_time = 6;
+  }
+  repeated CloneSpeaker clone_speaker_list = 1;
+  int32    train_time = 2;
+}
+
+message UpdateCloneSpeakerRequest{
+  int64  id = 1;
+  string speaker_name = 2;
+  string description = 4;
+}
+
+
+
+message DelCloneSpeakerRequest{
+  int64 id = 1;
+}

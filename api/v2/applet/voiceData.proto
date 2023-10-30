@@ -15,7 +15,7 @@ service VoiceDataOperation {
   // 训练数据上传
   rpc putVoiceData (VoiceDataReqData) returns (VoiceDataResData){
     option (google.api.http) = {
-      post: "/api/v2/voice-data/upload",
+      post: "/api/v2/voice-data/video/upload",
       body: "*"
     };
 
@@ -83,8 +83,6 @@ message ProgressResData {
   int32 current_number = 2;
   // 时间戳
   int64  finished_time = 3;
-  // 需要等待训练的时间  单位小时
-  int32  await_train = 4;
 }
 
 message DownloadReqData {

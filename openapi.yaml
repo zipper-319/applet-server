@@ -6,6 +6,48 @@ info:
     title: ""
     version: 0.0.1
 paths:
+    /api/v2/clone-speaker/del:
+        post:
+            tags:
+                - CloneSpeaker
+            operationId: CloneSpeaker_DelCloneSpeaker
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/applet.v2.DelCloneSpeakerRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /api/v2/clone-speaker/get-list:
+        get:
+            tags:
+                - CloneSpeaker
+            operationId: CloneSpeaker_GetCloneSpeaker
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/applet.v2.GetCloneSpeakerResult'
+    /api/v2/clone-speaker/update:
+        post:
+            tags:
+                - CloneSpeaker
+            operationId: CloneSpeaker_UpdateCloneSpeaker
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/applet.v2.UpdateCloneSpeakerRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
     /api/v2/login:
         get:
             tags:
@@ -108,7 +150,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/applet.v2.GetTextResData'
-    /api/v2/voice-data/upload:
+    /api/v2/voice-data/video/upload:
         post:
             tags:
                 - VoiceDataOperation
@@ -147,12 +189,42 @@ components:
                     type: integer
                     description: 需要等待训练的时间  单位小时
                     format: int32
+        applet.v2.DelCloneSpeakerRequest:
+            type: object
+            properties:
+                id:
+                    type: string
         applet.v2.DownloadResData:
             type: object
             properties:
                 voiceData:
                     type: string
                     description: 音频数据，base64编码
+        applet.v2.GetCloneSpeakerResult:
+            type: object
+            properties:
+                cloneSpeakerList:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/applet.v2.GetCloneSpeakerResult_CloneSpeaker'
+                trainTime:
+                    type: integer
+                    format: int32
+        applet.v2.GetCloneSpeakerResult_CloneSpeaker:
+            type: object
+            properties:
+                id:
+                    type: string
+                speakerName:
+                    type: string
+                isFinish:
+                    type: boolean
+                description:
+                    type: string
+                createTime:
+                    type: string
+                updateTime:
+                    type: string
         applet.v2.GetTextResData:
             type: object
             properties:
@@ -176,10 +248,15 @@ components:
                 finishedTime:
                     type: string
                     description: 时间戳
-                awaitTrain:
-                    type: integer
-                    description: 需要等待训练的时间  单位小时
-                    format: int32
+        applet.v2.UpdateCloneSpeakerRequest:
+            type: object
+            properties:
+                id:
+                    type: string
+                speakerName:
+                    type: string
+                description:
+                    type: string
         applet.v2.VoiceDataReqData:
             type: object
             properties:
@@ -202,4 +279,5 @@ components:
                     format: int32
 tags:
     - name: Account
+    - name: CloneSpeaker
     - name: VoiceDataOperation

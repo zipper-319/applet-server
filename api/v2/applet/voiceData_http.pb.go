@@ -40,7 +40,7 @@ type VoiceDataOperationHTTPServer interface {
 
 func RegisterVoiceDataOperationHTTPServer(s *http.Server, srv VoiceDataOperationHTTPServer) {
 	r := s.Route("/")
-	r.POST("/api/v2/voice-data/upload", _VoiceDataOperation_PutVoiceData0_HTTP_Handler(srv))
+	r.POST("/api/v2/voice-data/video/upload", _VoiceDataOperation_PutVoiceData0_HTTP_Handler(srv))
 	r.GET("/api/v2/voice-data/get-progress", _VoiceDataOperation_GetProgress0_HTTP_Handler(srv))
 	r.GET("/api/v2/voice-data/download", _VoiceDataOperation_DownloadVoice0_HTTP_Handler(srv))
 	r.POST("/api/v2/voice-data/commit", _VoiceDataOperation_Commit0_HTTP_Handler(srv))
@@ -218,7 +218,7 @@ func (c *VoiceDataOperationHTTPClientImpl) GetText(ctx context.Context, in *GetT
 
 func (c *VoiceDataOperationHTTPClientImpl) PutVoiceData(ctx context.Context, in *VoiceDataReqData, opts ...http.CallOption) (*VoiceDataResData, error) {
 	var out VoiceDataResData
-	pattern := "/api/v2/voice-data/upload"
+	pattern := "/api/v2/voice-data/video/upload"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationVoiceDataOperationputVoiceData))
 	opts = append(opts, http.PathTemplate(pattern))

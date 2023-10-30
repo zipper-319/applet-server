@@ -12,8 +12,11 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/redis/go-redis/v9"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"io"
 	"time"
 )
 
@@ -67,7 +70,6 @@ func (s *VoiceDataOperationService) GetProgress(ctx context.Context, req *pb.Pro
 	return &pb.ProgressResData{
 		CurrentNumber: int32(sequence),
 		FinishedTime:  finishedTime,
-		AwaitTrain:    0,
 	}, nil
 }
 func (s *VoiceDataOperationService) DownloadVoice(ctx context.Context, req *pb.DownloadReqData) (*pb.DownloadResData, error) {
@@ -112,6 +114,58 @@ func (s *VoiceDataOperationService) GetText(ctx context.Context, req *pb.GetText
 
 func (s *VoiceDataOperationService) HandlerFormData(ctx context.Context, file *data.FileObject, req *pb.UploadFilesRequest) (*emptypb.Empty, error) {
 	s.Info(req)
-	s.Info(file)
+	//f, err := os.OpenFile(req.Speaker, os.O_WRONLY|os.O_CREATE, 0o666)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//defer f.Close()
+	uploadMinio(file.File, file.FileName)
 	return &emptypb.Empty{}, nil
+}
+
+func uploadMinio(file io.Reader, filename string) error {
+	endpoint := "10.12.32.96:9100"
+	accessKeyID := "Q3AM3UQ867SPQQA43P2F"
+	secretAccessKey := "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
+
+	// Initialize minio client object.
+	minioClient, err := minio.New(endpoint, &minio.Options{
+		Creds: credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
+	})
+	if err != nil {
+		log.Info(err)
+	}
+
+	ctx := context.Background()
+	// Make a new bucket called mymusic.
+	bucketName := "mymusic"
+	location := "us-east-1"
+
+	exists, err := minioClient.BucketExists(ctx, bucketName)
+	if err != nil {
+
+		return err
+	}
+	if !exists {
+
+		err = minioClient.MakeBucket(ctx, bucketName, minio.MakeBucketOptions{Region: location})
+		if err != nil {
+			return err
+
+		}
+	}
+
+	// Upload the zip file
+	//objectName := "video/data机器人.mp4"
+	//filePath := "/home/data/下载/video/data机器人.mp4"
+	contentType := "video/mp4"
+
+	// Upload the zip file with FPutObject
+	info, err := minioClient.PutObject(ctx, bucketName, filename, file, -1, minio.PutObjectOptions{ContentType: contentType})
+	if err != nil {
+		log.Info(err)
+	}
+
+	log.Info("Successfully uploaded %s of size %s\n", filename, info.Location)
+	return nil
 }

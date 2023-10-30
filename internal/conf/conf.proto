@@ -60,6 +60,7 @@ message Data {
   Database database = 1;
   Redis redis = 2;
   S3 s3 = 3;
+  Minio  minio = 4;
 }
 
 message Database {
@@ -82,6 +83,14 @@ message S3 {
   string bucket = 4;
   string region = 5;
   int32  timeout = 6;
+}
+
+message Minio {
+  string addr = 1;
+  string access_key = 2;
+  string secret_key = 3;
+  string region = 4;
+  string bucket = 5;
 }
 
 message Log {

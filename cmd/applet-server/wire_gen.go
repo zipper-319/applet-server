@@ -44,7 +44,8 @@ func wireApp(confServer *conf.Server, app *conf.App, confData *conf.Data, log *c
 	serverOption := server.NewMiddlewares(logger, app)
 	userUseCase := biz.NewUserUseCase(dataData, logger)
 	accountService := service.NewAccountService(userUseCase)
-	httpServer := server.NewHTTPServer(confServer, serverOption, voiceDataOperationService, accountService, logger)
+	cloneSpeakerService := service.NewCloneSpeakerService()
+	httpServer := server.NewHTTPServer(confServer, serverOption, voiceDataOperationService, accountService, cloneSpeakerService, logger)
 	kratosApp := newApp(logger, grpcServer, httpServer)
 	return kratosApp, func() {
 	}, nil

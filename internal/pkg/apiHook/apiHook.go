@@ -55,16 +55,10 @@ func Hook(logger log.Logger) middleware.Middleware {
 
 			ctx = context.WithValue(ctx, LoggerKey{}, log.NewHelper(apiLogger))
 			reply, err = handler(ctx, req)
-			var result interface{}
 			var version string
 			if se := errors.FromError(err); se != nil {
 				code = int(se.Code)
 				message = se.Reason
-			} else {
-				rr := reflect.ValueOf(reply).Elem()
-				if rr.Kind() != reflect.Invalid {
-					result = rr.Interface()
-				}
 			}
 			isTimeout := false
 			latency := time.Since(startTime).Milliseconds()
@@ -83,7 +77,7 @@ func Hook(logger log.Logger) middleware.Middleware {
 				"code", code,
 				"message", message,
 				"stack", stack,
-				"result", result,
+				"result", reply,
 				"isTimeout", fmt.Sprintf("timeout is %t", isTimeout),
 				"latency", latency)
 			return
