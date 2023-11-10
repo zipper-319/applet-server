@@ -118,6 +118,5 @@ message GetTextResData {
 
 message UploadFilesRequest{
   string speaker = 1;
-  string file = 2;
 }
 

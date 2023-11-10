@@ -43,7 +43,7 @@ api:
  	       --go_out=paths=source_relative:./api \
  	       --go-http_out=paths=source_relative:./api \
  	       --go-grpc_out=paths=source_relative:./api \
-	       --openapi_out=openapi_naming_strategy=legacy,default_response=false:. \
+	       --openapi_out=fq_schema_naming=true,default_response=false:. \
 	       $(API_PROTO_FILES)
 	sed -i  "s/,omitempty//g"  $(API_PB_GO_FILES)
 
