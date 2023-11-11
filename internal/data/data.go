@@ -6,6 +6,7 @@ import (
 	"applet-server/internal/data/minio"
 	"applet-server/internal/data/mysql"
 	"applet-server/internal/data/s3"
+	"applet-server/internal/data/train"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/atomic"
 	"gorm.io/gorm"
@@ -15,7 +16,7 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, s3.NewS3Service, cache.NewRedisCache, mysql.NewDataDB, minio.NewMinioClient)
+var ProviderSet = wire.NewSet(NewData, s3.NewS3Service, cache.NewRedisCache, mysql.NewDataDB, minio.NewMinioClient, train.NewTrain)
 
 // Data .
 type Data struct {
@@ -23,15 +24,17 @@ type Data struct {
 	RedisClient *redis.Client
 	*gorm.DB
 	*minio.Client
+	Train *train.Train
 }
 
 // NewData .
-func NewData(s3 *s3.S3Service, rdb *redis.Client, db *gorm.DB, minioClient *minio.Client) (*Data, error) {
+func NewData(s3 *s3.S3Service, rdb *redis.Client, db *gorm.DB, minioClient *minio.Client, trainObject *train.Train) (*Data, error) {
 	return &Data{
 		S3:          s3,
 		RedisClient: rdb,
 		DB:          db,
 		Client:      minioClient,
+		Train:       trainObject,
 	}, nil
 }
 

@@ -28,6 +28,8 @@ data:
     bucket: voiceClone
     region: default
     timeout: 30
+  train:
+    addr: http://172.16.32.2:32287/mock/131
 
   minio:
     addr: 10.12.32.96:9100

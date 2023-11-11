@@ -3,7 +3,7 @@ module applet-server
 go 1.19
 
 require (
-	github.com/aws/aws-sdk-go v1.45.28
+	github.com/aws/aws-sdk-go v1.47.8
 	github.com/bitly/go-simplejson v0.5.1
 	github.com/envoyproxy/protoc-gen-validate v1.0.2
 	github.com/go-kratos/kratos/contrib/log/zap/v2 v2.0.0-20230830131453-6c026bce56a9
@@ -47,8 +47,6 @@ require (
 	github.com/go-playground/form/v4 v4.2.0 // indirect
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/golang/glog v1.1.2 // indirect
-	github.com/google/gnostic v0.7.0 // indirect
-	github.com/google/gnostic-models v0.6.9-0.20230804172637-c7be7c783f49 // indirect
 	github.com/google/subcommands v1.0.1 // indirect
 	github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect

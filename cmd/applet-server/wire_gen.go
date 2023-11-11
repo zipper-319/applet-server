@@ -14,6 +14,7 @@ import (
 	"applet-server/internal/data/minio"
 	"applet-server/internal/data/mysql"
 	"applet-server/internal/data/s3"
+	"applet-server/internal/data/train"
 	"applet-server/internal/pkg/log"
 	"applet-server/internal/server"
 	"applet-server/internal/service"
@@ -36,7 +37,8 @@ func wireApp(confServer *conf.Server, app *conf.App, confData *conf.Data, log *c
 	client := cache.NewRedisCache(confData)
 	db := mysql.NewDataDB(confData)
 	minioClient := minio.NewMinioClient(confData)
-	dataData, err := data.NewData(s3Service, client, db, minioClient)
+	trainTrain := train.NewTrain(confData, logger)
+	dataData, err := data.NewData(s3Service, client, db, minioClient, trainTrain)
 	if err != nil {
 		return nil, nil, err
 	}
