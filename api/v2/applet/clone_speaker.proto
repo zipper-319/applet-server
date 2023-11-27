@@ -52,10 +52,11 @@ message GetCloneSpeakerResult {
   message  CloneSpeaker {
     int64  id = 1;
     string speaker_name = 2 [json_name = "speaker_name"];
-    bool   is_finish = 3 [json_name = "is_finish"];
-    string description = 4  [json_name = "description"];
-    int64 create_time = 5 [json_name = "create_time"];
-    int64 update_time = 6 [json_name = "update_time"];
+    string commit_speaker_name = 3 [json_name = "commit_speaker_name"];
+    bool   is_finish = 4 [json_name = "is_finish"];
+    string description = 5  [json_name = "description"];
+    int64 create_time = 6 [json_name = "create_time"];
+    int64 update_time = 7 [json_name = "update_time"];
   }
   repeated CloneSpeaker clone_speaker_list = 1 [json_name = "clone_speaker_list"];
   int32    train_time = 2 [json_name = "train_time"];

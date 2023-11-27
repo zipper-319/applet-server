@@ -219,6 +219,8 @@ components:
                     format: int64
                 speaker_name:
                     type: string
+                commit_speaker_name:
+                    type: string
                 is_finish:
                     type: boolean
                 description:

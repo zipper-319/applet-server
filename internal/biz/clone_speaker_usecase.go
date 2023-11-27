@@ -2,6 +2,7 @@ package biz
 
 import (
 	"applet-server/api/v2/applet"
+	"applet-server/internal/biz/tts"
 	"applet-server/internal/data"
 	"applet-server/internal/data/mysql"
 	"applet-server/internal/pkg/util"
@@ -10,11 +11,12 @@ import (
 
 type CloneSpeakerUseCase struct {
 	*data.Data
-	repo *mysql.CloneSpeakerModel
+	repo      *mysql.CloneSpeakerModel
+	ttsClient *tts.TTSClient
 }
 
-func NewCloneSpeakerUseCase(data *data.Data) *CloneSpeakerUseCase {
-	return &CloneSpeakerUseCase{Data: data, repo: mysql.NewCloneSpeakerModel(data.DB)}
+func NewCloneSpeakerUseCase(data *data.Data, client *tts.TTSClient) *CloneSpeakerUseCase {
+	return &CloneSpeakerUseCase{Data: data, repo: mysql.NewCloneSpeakerModel(data.DB), ttsClient: client}
 }
 
 func (uc *CloneSpeakerUseCase) GetSpeakerList(ctx context.Context, username string) (*applet.GetCloneSpeakerResult, error) {
@@ -22,17 +24,29 @@ func (uc *CloneSpeakerUseCase) GetSpeakerList(ctx context.Context, username stri
 	if err != nil {
 		return nil, err
 	}
+	userSpaceSpeakers, err := uc.ttsClient.GetUserSpeaker(ctx, username)
+	if err != nil {
+		return nil, err
+	}
+	finishedSpeakerIdList := make([]int64, 0, len(result))
+
 	speakerList := make([]*applet.GetCloneSpeakerResult_CloneSpeaker, 0, len(result))
 	for _, v := range result {
+		status := v.IsFinish
+		if !status {
+			status = util.IsSpeakerExist(userSpaceSpeakers, v.SubmittedSpeaker)
+			finishedSpeakerIdList = append(finishedSpeakerIdList, v.Id)
+		}
 		speakerList = append(speakerList, &applet.GetCloneSpeakerResult_CloneSpeaker{
 			Id:          v.Id,
 			SpeakerName: v.SpeakerName,
-			IsFinish:    false,
+			IsFinish:    status,
 			Description: v.Description,
 			CreateTime:  v.CreatedAt.Unix(),
 			UpdateTime:  v.UpdatedAt.Unix(),
 		})
 	}
+	uc.repo.UpdateStatus(ctx, finishedSpeakerIdList)
 	return &applet.GetCloneSpeakerResult{
 		CloneSpeakerList: speakerList,
 		TrainTime:        util.DefaultTrainDuration,

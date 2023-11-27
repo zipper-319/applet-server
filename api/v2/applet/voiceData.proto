@@ -120,3 +120,8 @@ message UploadFilesRequest{
   string speaker = 1;
 }
 
+enum Flag{
+  start = 0;
+  continue = 1;
+  end = 2;
+}

@@ -7,11 +7,12 @@ import (
 
 type CloneSpeaker struct {
 	//
-	Id               int64    `gorm:"column:id;primaryKey" json:"id"`
+	Id               int64  `gorm:"column:id;primaryKey" json:"id"`
 	SpeakerName      string `gorm:"column:speaker_name" json:"speaker_name"`
 	SubmittedSpeaker string `gorm:"column:submitted_speaker" json:"submitted_speaker"`
 	Username         string `gorm:"column:username" json:"username"`
 	Description      string `gorm:"column:description" json:"description"`
+	IsFinish         bool   `gorm:"column:is_finish" json:"is_finish"`
 	*gorm.Model
 }
 
@@ -46,6 +47,13 @@ func (m *CloneSpeakerModel) Update(ctx context.Context, id int64, speakerName st
 	db = db.Model(&CloneSpeaker{})
 	db = db.Where("id = ?", id)
 	return db.UpdateColumn("speaker_name", speakerName).Error
+}
+
+func (m *CloneSpeakerModel) UpdateStatus(ctx context.Context, ids []int64) error {
+	db := m.db.WithContext(ctx)
+	db = db.Model(&CloneSpeaker{})
+	db = db.Where("id in (?)", ids)
+	return db.UpdateColumn("is_finish", true).Error
 }
 
 func (m *CloneSpeakerModel) Delete(ctx context.Context, id int64) error {

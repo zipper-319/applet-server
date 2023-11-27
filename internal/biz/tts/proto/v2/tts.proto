@@ -6,19 +6,31 @@ option go_package = "speech-tts/api/tts/v2;v2";
 import "google/api/annotations.proto";
 import "validate/validate.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
+import "google/protobuf/empty.proto";
 
 service CloudMindsTTS {
+    // 合成音频流的流式接口
     rpc Call (TtsReq) returns (stream TtsRes) {}
+    // 获取服务版本信息
     rpc GetVersion (VerVersionReq) returns (VerVersionRsp) {
         option (google.api.http) = {
             get: "/speech/tts/getVersion",
         };
     }
+    // 获取服务端配置信息
     rpc GetTtsConfig (VerReq) returns (RespGetTtsConfig) {
+        // 获取服务端配置信息
         option (google.api.http) = {
             get: "/speech/tts/getConfig",
         };
-    }     // 获取服务端配置信息
+    }
+
+    //获取指定用户发音人信息
+    rpc GetUserSpeakers(GetUserSpeakersRequest) returns (GetUserSpeakersResponse){
+        option (google.api.http) = {
+            get: "/speech/tts/get-user-speakers",
+        };
+    }
 
     rpc Register(RegisterReq) returns (RegisterResp){
         option (google.api.http) = {
@@ -29,8 +41,8 @@ service CloudMindsTTS {
 }
 
 enum ClientVersion{
-    invalid = 0;
-    version = 0x7af243b;
+    invalid = 0;                               // 无效的版本号
+    version = 0x7af243b;                       // 当前客户端的版本号
 }
 
 
@@ -43,10 +55,11 @@ message TtsReq {
     string emotions = 5;                        // 如果该发音人支持情感，取值范围请用 GetTtsConfig EmotionList.Name，如果不支持请传""，否则会报错
     string parameter_speaker_name = 6;          // 取值范围请用 GetTtsConfig函数的返回Speakerlist.parameterSpeakerName
     string parameter_digital_person = 7 [deprecated = true];        // **********数字人形象，  (废弃不用)  *******************
-    map<string, string> parameter_flag = 8;     // 额外信息参数，口型key:mouth,字符串"true"或者"false"、动作key:movement,value的取值范围参考GetTtsConfig-MessageMovement.name、表情key:expression,value的取值范围参考GetTtsConfig-MessageExpression.name
-    string trace_id = 9;
-    string root_trace_id = 10;
-    ClientVersion version = 100;
+    map<string, string> parameter_flag = 8;     // 额外信息参数，口型key:mouth,字符串"true"或者"false"；动作movement， 字符串"true"或者"false"； 表情expression、字符串"true"或者"false";动作具体参数key:movementPara,value的取值范围参考GetTtsConfig-MessageMovement.name; 表情具体参数key:expressionPara,value的取值范围参考GetTtsConfig-MessageExpression.name
+    string trace_id = 9;                        //  trace_id
+    string root_trace_id = 10;                  //  机器人请求ID
+    string language = 11;                       //  语种提示
+    ClientVersion version = 100;                //  标识客户端版本号
 }
 
 message TtsRes {
@@ -74,8 +87,8 @@ message SynthesizedAudio {
 
 // 调试信息
 message DebugInfo {
-    string debug_type = 1;
-    string info = 2;
+    string debug_type = 1;                      // 调试类型
+    string info = 2;                            //  调试信息
 }
 
 // Action基元数据
@@ -146,7 +159,7 @@ message VerVersionReq {
 }
 
 message VerVersionRsp {
-    string version = 1;
+    string version = 1;                                  // 版本号
 }
 
 message VerReq {
@@ -158,7 +171,7 @@ message RespGetTtsConfig {
     repeated string volume_list = 3;                        // SupportedVolume
     repeated MessagePitch pitch_list = 4;                   // SupportedPitch
     repeated MessageEmotion emotion_list = 5;               // SupportedEmotion
-    repeated MessageDigitalPerson digital_person_list = 6 [deprecated = true];  // DigitalPerson 废弃不用
+    repeated MessageDigitalPerson digital_person_list = 6 [deprecated = true];  // MessageDigitalPerson 废弃不用
     repeated MessageMovement  movement_list  = 7;            // SupportedMovement  动作
     repeated MessageExpression  expression_list  = 8;        // SupportedExpression 表情
 }
@@ -176,19 +189,19 @@ message SpeakerParameter {
 }
 
 message MessagePitch {
-    int32 id = 1;
+
     string name = 2;                                        // 参数
     string chinese_name = 3;                                // 对应中文
 }
 
 message MessageEmotion {
-    int32 id = 1;
+
     string name = 2;                                        // 参数
     string chinese_name = 3;                                // 对应中文
 }
 
 message MessageDigitalPerson {
-    int32 id = 1;
+
     string name = 2;                                        // 参数
     string chinese_name = 3;                                // 对应中文
 }
@@ -210,4 +223,13 @@ message  RegisterReq {
 
 message RegisterResp{
     string token = 1;
+}
+
+message GetUserSpeakersRequest{
+    string trace_id = 1;
+    string user = 2;
+}
+
+message GetUserSpeakersResponse{
+    repeated string  speakers = 1;
 }
