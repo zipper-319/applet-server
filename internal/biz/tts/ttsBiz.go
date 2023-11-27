@@ -150,3 +150,16 @@ func (c *TTSClient) GetUserSpeaker(ctx context.Context, user string) ([]string, 
 	}
 	return resp.Speakers, nil
 }
+
+func (c *TTSClient) GetTTSConfig(ctx context.Context, user string) (*v2.RespGetTtsConfig, error) {
+	traceId := uuid.New().String()
+	ttsV2Client := v2.NewCloudMindsTTSClient(c.ClientConn)
+	resp, err := ttsV2Client.GetTtsConfigByUser(ctx, &v2.GetTtsConfigByUserRequest{
+		TraceId: traceId,
+		User:    user,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}

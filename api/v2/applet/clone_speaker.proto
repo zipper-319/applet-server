@@ -52,7 +52,7 @@ message GetCloneSpeakerResult {
   message  CloneSpeaker {
     int64  id = 1;
     string speaker_name = 2 [json_name = "speaker_name"];
-    string commit_speaker_name = 3 [json_name = "commit_speaker_name"];
+    string speaker_param = 3 [json_name = "speaker_param"];
     bool   is_finish = 4 [json_name = "is_finish"];
     string description = 5  [json_name = "description"];
     int64 create_time = 6 [json_name = "create_time"];

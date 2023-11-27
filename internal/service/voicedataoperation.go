@@ -22,16 +22,16 @@ import (
 
 type VoiceDataOperationService struct {
 	pb.UnimplementedVoiceDataOperationServer
-	*biz.S3UseCase
+	uc *biz.VideoUseCase
 	*log.Helper
 	speaker *biz.CloneSpeakerUseCase
 }
 
-func NewVoiceDataOperationService(useCase *biz.S3UseCase, speakerUseCase *biz.CloneSpeakerUseCase, logger log.Logger) *VoiceDataOperationService {
+func NewVoiceDataOperationService(useCase *biz.VideoUseCase, speakerUseCase *biz.CloneSpeakerUseCase, logger log.Logger) *VoiceDataOperationService {
 	return &VoiceDataOperationService{
-		S3UseCase: useCase,
-		Helper:    log.NewHelper(logger),
-		speaker:   speakerUseCase,
+		uc:      useCase,
+		Helper:  log.NewHelper(logger),
+		speaker: speakerUseCase,
 	}
 }
 
@@ -46,7 +46,7 @@ func (s *VoiceDataOperationService) PutVoiceData(ctx context.Context, req *pb.Vo
 	if err != nil {
 		return nil, err
 	}
-	if err := s.S3UseCase.Upload(ctx, voiceData, int(req.Sequence), username, req.VoiceType); err != nil {
+	if err := s.uc.Upload(ctx, voiceData, int(req.Sequence), username, req.VoiceType); err != nil {
 		return nil, err
 	}
 	return &pb.VoiceDataResData{}, nil
@@ -60,10 +60,10 @@ func (s *VoiceDataOperationService) GetProgress(ctx context.Context, req *pb.Pro
 	username := tokenInfo.Username
 
 	progressKey := fmt.Sprintf("%s:%s:%s", util.REDIS_KEY_AWS_S3_USER_Prefix, username, req.VoiceType)
-	sequence, err := s.S3UseCase.Data.RedisClient.Get(ctx, progressKey).Int64()
+	sequence, err := s.uc.Data.RedisClient.Get(ctx, progressKey).Int64()
 
 	finishedKey := fmt.Sprintf("finishedTime:%s:%s", username, req.VoiceType)
-	finishedTime, err := s.S3UseCase.Data.RedisClient.Get(ctx, finishedKey).Int64()
+	finishedTime, err := s.uc.Data.RedisClient.Get(ctx, finishedKey).Int64()
 	if err == redis.Nil {
 		finishedTime = 0
 	} else {
@@ -84,18 +84,20 @@ func (s *VoiceDataOperationService) Commit(ctx context.Context, req *pb.CommitRe
 	}
 	s.Infof("tokenInfo: %+v", tokenInfo)
 	username := tokenInfo.Username
-	s3NameList := make([]string, 0, 50)
-	for i := 0; i < voiceText.VoiceDataSize[req.VoiceType]; i++ {
-		s3NameList = append(s3NameList, fmt.Sprintf("%s/%d.pcm", username, i))
-	}
+	//s3NameList := make([]string, 0, 50)
+	//for i := 0; i < voiceText.VoiceDataSize[req.VoiceType]; i++ {
+	//	s3NameList = append(s3NameList, fmt.Sprintf("%s/%d.pcm", username, i))
+	//}
 	key := fmt.Sprintf("finishedTime:%s:%s", username, req.Speaker)
 
-	if s.S3UseCase.Data.RedisClient.SetNX(ctx, key, time.Now().Unix(), 0).Val() {
-		if err := s.speaker.CreateSpeaker(ctx, req.Speaker, username); err != nil {
+	if s.uc.RedisClient.SetNX(ctx, key, time.Now().Unix(), 0).Val() {
+		progressKey := fmt.Sprintf("%s:%s:%s", util.REDIS_KEY_AWS_S3_USER_Prefix, username, req.VoiceType)
+		speakerParam := s.uc.RedisClient.HGet(ctx, progressKey, "speaker").String()
+		if err := s.speaker.CreateSpeaker(ctx, username, speakerParam, req.Speaker); err != nil {
 			return nil, err
 		}
-		progressKey := fmt.Sprintf("%s:%s:%s", util.REDIS_KEY_AWS_S3_USER_Prefix, username, req.VoiceType)
-		s.Data.RedisClient.Del(ctx, progressKey)
+
+		s.uc.RedisClient.Del(ctx, progressKey)
 
 		return &pb.CommitResData{}, nil
 	} else {

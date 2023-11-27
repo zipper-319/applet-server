@@ -34,16 +34,17 @@ func (uc *CloneSpeakerUseCase) GetSpeakerList(ctx context.Context, username stri
 	for _, v := range result {
 		status := v.IsFinish
 		if !status {
-			status = util.IsSpeakerExist(userSpaceSpeakers, v.SubmittedSpeaker)
+			status = util.IsSpeakerExist(userSpaceSpeakers, v.SpeakerParam)
 			finishedSpeakerIdList = append(finishedSpeakerIdList, v.Id)
 		}
 		speakerList = append(speakerList, &applet.GetCloneSpeakerResult_CloneSpeaker{
-			Id:          v.Id,
-			SpeakerName: v.SpeakerName,
-			IsFinish:    status,
-			Description: v.Description,
-			CreateTime:  v.CreatedAt.Unix(),
-			UpdateTime:  v.UpdatedAt.Unix(),
+			Id:           v.Id,
+			SpeakerName:  v.SpeakerName,
+			SpeakerParam: v.SpeakerParam,
+			IsFinish:     status,
+			Description:  v.Description,
+			CreateTime:   v.CreatedAt.Unix(),
+			UpdateTime:   v.UpdatedAt.Unix(),
 		})
 	}
 	uc.repo.UpdateStatus(ctx, finishedSpeakerIdList)
@@ -57,14 +58,30 @@ func (uc *CloneSpeakerUseCase) UpdateSpeaker(ctx context.Context, req *applet.Up
 	return uc.repo.Update(ctx, req.Id, req.SpeakerName)
 }
 
+func (uc *CloneSpeakerUseCase) CommitSpeakerName(ctx context.Context, username, speakerParam, speakerName string) error {
+	return uc.repo.SetSpeakerName(ctx, username, speakerParam, speakerName)
+}
+
 func (uc *CloneSpeakerUseCase) DelSpeaker(ctx context.Context, req *applet.DelCloneSpeakerRequest) error {
 	return uc.repo.Delete(ctx, req.Id)
 }
 
-func (uc *CloneSpeakerUseCase) CreateSpeaker(ctx context.Context, speaker, username string) error {
+func (uc *CloneSpeakerUseCase) CreateSpeaker(ctx context.Context, username, speakerName, speakerParam string) error {
 	return uc.repo.Create(ctx, &mysql.CloneSpeaker{
-		SpeakerName:      speaker,
-		SubmittedSpeaker: speaker,
-		Username:         username,
+		SpeakerName:  speakerName,
+		SpeakerParam: speakerParam,
+		Username:     username,
 	})
+}
+
+func (uc *CloneSpeakerUseCase) GetSpeakerMap(ctx context.Context, username string) (map[string]string, error) {
+	speakerList, err := uc.repo.GetCloneSpeakerList(ctx, username)
+	if err != nil {
+		return nil, err
+	}
+	speakerMap := make(map[string]string, len(speakerList))
+	for _, v := range speakerList {
+		speakerMap[v.SpeakerParam] = v.SpeakerName
+	}
+	return speakerMap, nil
 }
