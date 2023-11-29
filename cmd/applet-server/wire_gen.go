@@ -8,6 +8,9 @@ package main
 
 import (
 	"applet-server/internal/biz"
+	"applet-server/internal/biz/asr"
+	"applet-server/internal/biz/nlp"
+	"applet-server/internal/biz/tts"
 	"applet-server/internal/conf"
 	"applet-server/internal/data"
 	"applet-server/internal/data/cache"
@@ -42,15 +45,20 @@ func wireApp(confServer *conf.Server, app *conf.App, confData *conf.Data, log *c
 	if err != nil {
 		return nil, nil, err
 	}
-	s3UseCase := biz.NewS3UseCase(dataData, logger)
-	cloneSpeakerUseCase := biz.NewCloneSpeakerUseCase(dataData)
-	voiceDataOperationService := service.NewVoiceDataOperationService(s3UseCase, cloneSpeakerUseCase, logger)
+	videoUseCase := biz.NewVideoUseCase(dataData, logger)
+	ttsClient := tts.NewTTSClient(app, logger)
+	cloneSpeakerUseCase := biz.NewCloneSpeakerUseCase(dataData, ttsClient)
+	voiceDataOperationService := service.NewVoiceDataOperationService(videoUseCase, cloneSpeakerUseCase, logger)
 	grpcServer := server.NewGRPCServer(confServer, voiceDataOperationService, logger)
 	serverOption := server.NewMiddlewares(logger, app)
 	userUseCase := biz.NewUserUseCase(dataData, logger)
 	accountService := service.NewAccountService(userUseCase)
 	cloneSpeakerService := service.NewCloneSpeakerService(cloneSpeakerUseCase)
-	httpServer := server.NewHTTPServer(confServer, serverOption, voiceDataOperationService, accountService, cloneSpeakerService, logger)
+	ttsServiceService := service.NewTTSServiceService(ttsClient, cloneSpeakerUseCase)
+	asRControllerClient := asr.NewAsRControllerClient(app, logger)
+	talkClient := nlp.NewTalkClient(app, logger)
+	chatService := service.NewChatService(logger, ttsClient, asRControllerClient, talkClient)
+	httpServer := server.NewHTTPServer(confServer, serverOption, voiceDataOperationService, accountService, cloneSpeakerService, ttsServiceService, chatService, logger)
 	kratosApp := newApp(logger, grpcServer, httpServer)
 	return kratosApp, func() {
 	}, nil

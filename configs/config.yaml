@@ -10,6 +10,17 @@ app:
   auth:
     key:
     expire: 150000000s
+  tts:
+    addr: 172.16.23.14:31795
+    timeout: 10s
+  asr:
+    # 172.16.23.85:30938
+    addr: 172.16.13.134:30938
+    timeout: 10s
+  nlp:
+    # 172.16.23.85:30811
+    addr: 172.16.13.121:31402
+    timeout: 10s
 
 data:
   database:

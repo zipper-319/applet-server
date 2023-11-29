@@ -40,11 +40,13 @@ func NewData(s3 *s3.S3Service, rdb *redis.Client, db *gorm.DB, minioClient *mini
 
 type Session struct {
 	Id       string
+	Username string
 	TraceId  string
 	RobotId  int32
 	Position string
 	AgentId  int
 	Language *atomic.String
+	applet.MethodType
 }
 
 //func NewSession(robotId int32, position string, agentId int, language string) *Session {
@@ -89,4 +91,20 @@ type ChatServerMessage struct {
 type FileObject struct {
 	File     io.Reader
 	FileName string
+}
+
+//func NewSession(robotId int32, position string, agentId int, language string) *Session {
+//	id := uuid.New().String()
+//	return &Session{TraceId: id, RobotId: robotId, Position: position, AgentId: agentId, Language: language}
+//}
+
+func GenSession(req applet.ChatWSReq, username, sessionId string) *Session {
+	return &Session{
+		Id:         sessionId,
+		Username:   username,
+		Position:   req.Position,
+		AgentId:    int(req.AgentId),
+		Language:   atomic.NewString(req.Language),
+		MethodType: req.Method,
+	}
 }

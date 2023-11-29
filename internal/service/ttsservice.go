@@ -13,10 +13,10 @@ import (
 type TTSServiceService struct {
 	pb.UnimplementedTTSServiceServer
 	ttsClient *tts.TTSClient
-	speakerUC biz.CloneSpeakerUseCase
+	speakerUC *biz.CloneSpeakerUseCase
 }
 
-func NewTTSServiceService(client *tts.TTSClient, useCase biz.CloneSpeakerUseCase) *TTSServiceService {
+func NewTTSServiceService(client *tts.TTSClient, useCase *biz.CloneSpeakerUseCase) *TTSServiceService {
 	return &TTSServiceService{
 		ttsClient: client,
 		speakerUC: useCase,
@@ -90,5 +90,3 @@ func (s *TTSServiceService) GetTTSConfig(ctx context.Context, req *emptypb.Empty
 		ExpressionList: expressionList,
 	}, nil
 }
-
-

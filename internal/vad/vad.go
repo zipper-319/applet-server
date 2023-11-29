@@ -48,6 +48,7 @@ type DataInfo struct {
 	Session    *data.Session
 	Server     service.ChatWebsocketServer
 	LastCancel context.CancelFunc
+	log.Logger
 }
 
 var callback C.VAD_Callback
@@ -76,7 +77,7 @@ func FeedAudio(ctx context.Context, vadDateInfo *DataInfo) {
 	if err != nil {
 		panic(err)
 	}
-	handle := C.VAD_Wrapper_Create(&callback, pData, C.int(3))
+	handle := C.VAD_Wrapper_Create(&callback, unsafe.Pointer(uintptr(pData)), C.int(3))
 	//// 打开一个文件保存音频
 	//file, err := os.OpenFile(fmt.Sprintf("asset/%s.pcm", vadDateInfo.Session.Id), os.O_CREATE|os.O_WRONLY, 0666)
 	//if err != nil {
@@ -86,7 +87,6 @@ func FeedAudio(ctx context.Context, vadDateInfo *DataInfo) {
 	defer func() {
 		C.VAD_Wrapper_Destory(handle)
 		pointer.Unref(pData)
-		close(vadDateInfo.IsEnd)
 		//file.Close()
 		log.Debugf("finish to destroy vad")
 	}()
@@ -97,8 +97,6 @@ func FeedAudio(ctx context.Context, vadDateInfo *DataInfo) {
 	C.VAD_Wrapper_SetVadConfig(handle, C.int(vadConfig.IsEnableSslFilter), C.int(desireSsl.Dimension), C.int(desireSsl.Size),
 		(*C.float)(unsafe.Pointer(&desireSslFloat)), C.float(vadConfig.SslThreshold), C.int(vadConfig.PauseMode), C.int(vadConfig.IsEnableEnergyFilter))
 
-	//awaitTime := 30 * time.Second
-	//vadTimer := time.NewTimer(awaitTime)
 	for {
 		select {
 		case voiceData, isOpen := <-vadDateInfo.InputCh:
@@ -109,9 +107,6 @@ func FeedAudio(ctx context.Context, vadDateInfo *DataInfo) {
 				}
 
 				ok := C.VAD_Wrapper_FeedAudio(handle, (*C.char)(unsafe.Pointer(&voiceData[0])), C.int(size), nil)
-				//if ok > 0 {
-				//	vadTimer.Reset(awaitTime)
-				//}
 				log.Debugf("voiceData length: %d; VAD_FeedAudio result:%d", size, int(ok))
 				//file.Write(voiceData)
 			} else {

@@ -8,13 +8,16 @@ import "google/api/annotations.proto";
 
 service ChatRoom {
   rpc chat(ChatWSReq) returns (ChatWSResp) {
+    option (google.api.http) = {
+      get: "/api/v2/chat/ws"
+    };
   };
 }
 
 
 // url中的路径参数；后续可以传递TTS发音人角色、语速、2D数字人形象等参数
 message ChatWSReq {
-  int32  robot_id = 1;
+  MethodType method = 1;
   string position = 2;
   string language = 3;
   int32  agent_id = 4;
@@ -23,8 +26,9 @@ message ChatWSReq {
 
 message ChatWSResp {
   int32  code = 1;
-  string message = 2;
-  string Metadata = 3;   // 根据后续方案而定，可能是实时音频流地址。
+  string reason = 2;
+  string message = 3;
+  string Metadata = 4;
 }
 
 
@@ -69,14 +73,13 @@ enum Vendor{
   VENDOR_GOOGLE = 1;
   VENDOR_IFlyTek = 2;
   VENDOR_CPAll = 3;
-
 }
 
 
 message ChatParameter{
-  int32 speed = 1;
-  int32 volume = 2;
-  int32 pitch = 3;
+  int32  speed = 1;
+  int32  volume = 2;
+  int32  pitch = 3;
   string speaker = 4;
   string style  = 5;
   string language = 6;
@@ -90,4 +93,14 @@ enum ChatResponseType {
   ASRText = 0;
   AnswerText = 1;
   AnswerVoice = 2;
+}
+
+enum MethodType{
+  TypeUnknown   = 0;
+  OnlyTTS       = 1;
+  OnlyNlp       = 2;
+  NlpTTS        = 3;
+  OnlyAsr       = 4;
+  AsrNlp        = 5;
+  AsrNlpTTS     = 6;
 }

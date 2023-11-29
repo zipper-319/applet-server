@@ -53,6 +53,8 @@ build:
 
 .PHONY: start
 start:build
+	export LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(PWD)/internal/vad/libs  && \
+	export GODEBUG=cgocheck=0  && \
 	./bin/$(PROJECT)
 
 .PHONY: generate

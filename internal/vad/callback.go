@@ -12,15 +12,14 @@ import "C"
 
 //export goVoiceStart
 func goVoiceStart(pUserData unsafe.Pointer) {
-	pDataInfo, ok := pointer.Load(pUserData).(*DataInfo)
+	pDataInfo, ok := pointer.Load(int64(uintptr(pUserData))).(*DataInfo)
 	if !ok {
 		log.Error("goVoiceStart; pUserData not found")
 		return
 	}
 	if pDataInfo.LastCancel != nil {
 		pDataInfo.LastCancel()
-		err := pDataInfo.Server.CancelHandlerDHuman(context.Background(), pDataInfo.Session)
-		log.Debugf("goVoiceStart; CancelHandlerDHuman; err=%v", err)
+		log.Debugf("goVoiceStart; cancel last cancel; ")
 	}
 	pDataInfo.OutputCh = make(chan []byte, 50)
 	ctx, cancel := context.WithCancel(context.Background())
@@ -34,7 +33,7 @@ func goVoiceStart(pUserData unsafe.Pointer) {
 //export goVoiceEnd
 func goVoiceEnd(pUserData unsafe.Pointer, info *C.char) {
 
-	pDataInfo, ok := pointer.Load(pUserData).(*DataInfo)
+	pDataInfo, ok := pointer.Load(int64(uintptr(pUserData))).(*DataInfo)
 	if !ok {
 		log.Error("goVoiceEnd; pUserData not found")
 		return
@@ -47,7 +46,7 @@ func goVoiceEnd(pUserData unsafe.Pointer, info *C.char) {
 //export goVoiceData
 func goVoiceData(pUserData unsafe.Pointer, voice *C.char, size C.uint, flags C.uint) {
 
-	pDataInfo, ok := pointer.Load(pUserData).(*DataInfo)
+	pDataInfo, ok := pointer.Load(int64(uintptr(pUserData))).(*DataInfo)
 	if !ok {
 		log.Error("goVoiceEnd; pUserData not found")
 		return

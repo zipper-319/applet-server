@@ -6,6 +6,41 @@ info:
     title: ""
     version: 0.0.1
 paths:
+    /api/v2/chat/ws:
+        get:
+            tags:
+                - ChatRoom
+            operationId: ChatRoom_Chat
+            parameters:
+                - name: method
+                  in: query
+                  schema:
+                    type: integer
+                    format: enum
+                - name: position
+                  in: query
+                  schema:
+                    type: string
+                - name: language
+                  in: query
+                  schema:
+                    type: string
+                - name: agentId
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: sessionId
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/applet.v2.ChatWSResp'
     /api/v2/clone-speaker/del:
         post:
             tags:
@@ -183,6 +218,18 @@ paths:
                                 $ref: '#/components/schemas/applet.v2.VoiceDataResData'
 components:
     schemas:
+        applet.v2.ChatWSResp:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: int32
+                reason:
+                    type: string
+                message:
+                    type: string
+                Metadata:
+                    type: string
         applet.v2.CommitRequest:
             type: object
             properties:
@@ -365,6 +412,7 @@ components:
                     format: int32
 tags:
     - name: Account
+    - name: ChatRoom
     - name: CloneSpeaker
     - name: TTSService
     - name: VoiceDataOperation

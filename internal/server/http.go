@@ -6,18 +6,17 @@ import (
 	"applet-server/internal/pkg/apiHook"
 	jwtUtil "applet-server/internal/pkg/jwt"
 	"applet-server/internal/service"
+	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/metrics"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"github.com/go-kratos/kratos/v2/middleware/validate"
-	"github.com/go-kratos/swagger-api/openapiv2"
-
-	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/transport/http"
+	"github.com/go-kratos/swagger-api/openapiv2"
 )
 
 // NewHTTPServer new an HTTP server.
 func NewHTTPServer(c *conf.Server, middlewares http.ServerOption, vdSer *service.VoiceDataOperationService, account *service.AccountService,
-	speakerService *service.CloneSpeakerService, ttsService *service.TTSServiceService, logger log.Logger) *http.Server {
+	speakerService *service.CloneSpeakerService, ttsService *service.TTSServiceService, chat *service.ChatService, logger log.Logger) *http.Server {
 	var opts = []http.ServerOption{
 		middlewares,
 	}
@@ -42,6 +41,7 @@ func NewHTTPServer(c *conf.Server, middlewares http.ServerOption, vdSer *service
 	applet.RegisterCloneSpeakerHTTPServer(srv, speakerService)
 	applet.RegisterTTSServiceHTTPServer(srv, ttsService)
 	RegisterFormDataHandler(srv, vdSer)
+	RegisterChatWebsocketServer(srv, chat)
 	return srv
 }
 

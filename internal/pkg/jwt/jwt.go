@@ -2,7 +2,6 @@ package jwtUtil
 
 import (
 	"context"
-	"fmt"
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware"
@@ -204,17 +203,18 @@ func GetToken(username, PhoneNumber string, role int) (string, error) {
 	return GenerateJwtToken(keyFunc, WithClaims(claims))
 }
 
-func ParseToken(token, key string) (*jwt.Token, error) {
+func ParseToken(token, key string) (*IdentityClaims, error) {
 	identifier := IdentityClaims{}
 	tokenInfo, err := jwt.ParseWithClaims(token, &identifier, KeyProvider(key))
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(identifier.Username)
+	log.Debug(identifier.Username)
 	if claims, ok := tokenInfo.Claims.(*IdentityClaims); ok {
-		fmt.Println("tokenInfo.Claims is *IdentityClaims", claims.Username)
+		log.Debug("tokenInfo.Claims is *IdentityClaims", claims.Username)
+		return claims, nil
 	}
-	return tokenInfo, nil
+	return nil, err
 }
 
 func GetTokenInfo(ctx context.Context) (tokenInfo *IdentityClaims, ok bool) {
