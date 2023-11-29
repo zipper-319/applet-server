@@ -1,6 +1,7 @@
 package train
 
 import (
+	"applet-server/api/v2/applet"
 	"github.com/go-kratos/kratos/v2/log"
 	"os"
 	"testing"
@@ -13,10 +14,9 @@ func TestVideo(t *testing.T) {
 	}
 	fileName := "7.wav"
 	f, _ := os.OpenFile(fileName, os.O_RDONLY, 0666)
-	result, err := train.SaveVideo(f, "test", "1", fileName, 0)
+	err := train.SaveVideo(f, "test", "1", fileName, applet.Flag_start)
 	if err != nil {
 		t.Error(err)
 	}
-	t.Log(result)
 
 }

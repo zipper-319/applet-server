@@ -31,6 +31,7 @@ func NewCloneSpeakerModel(db *gorm.DB) *CloneSpeakerModel {
 func (m *CloneSpeakerModel) GetCloneSpeakerList(ctx context.Context, username string) ([]*CloneSpeaker, error) {
 	var result []*CloneSpeaker
 	var db = m.db.WithContext(ctx)
+	db = db.Model(&CloneSpeaker{})
 	db = db.Select(`*`)
 	db = db.Where("username = ?", username)
 	db = db.Find(&result)
@@ -40,6 +41,7 @@ func (m *CloneSpeakerModel) GetCloneSpeakerList(ctx context.Context, username st
 func (m *CloneSpeakerModel) GetUserSpeakerCount(ctx context.Context, username string) (int64, error) {
 	var total int64
 	var db = m.db.WithContext(ctx)
+	db = db.Model(&CloneSpeaker{})
 	db = db.Select(`*`)
 	db = db.Where("username = ?", username)
 	db = db.Count(&total)

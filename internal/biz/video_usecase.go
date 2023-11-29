@@ -39,7 +39,10 @@ func (u *VideoUseCase) Upload(ctx context.Context, voiceData []byte, sequence in
 	if sequence > nextSequence {
 		return errors.New("sequence error")
 	}
-	speakerParam = u.RedisClient.HGet(ctx, key, "speaker").String()
+	speakerParam, err = u.RedisClient.HGet(ctx, key, "speaker").Result()
+	if err != nil && err != redis.Nil {
+		return fmt.Errorf("HGet;redis error:%v", err)
+	}
 	// 创建发音人Id
 	if speakerParam == "" {
 		speakerRepo := mysql.NewCloneSpeakerModel(u.DB)
@@ -48,13 +51,10 @@ func (u *VideoUseCase) Upload(ctx context.Context, voiceData []byte, sequence in
 			return err
 		}
 		speakerParam = fmt.Sprintf("%s_%s_%d", username, voiceType, count+1)
-		_, err = u.RedisClient.HSet(ctx, key, "speaker", speakerParam).Result()
-		if err != nil {
-			return err
-		}
+		u.RedisClient.HSet(ctx, key, "speaker", speakerParam)
 	}
 	// 上传音频到aws s3对象中
-	fileName := fmt.Sprintf("%s/%s/%d.wav", username, voiceType.String(), sequence)
+	fileName := fmt.Sprintf("%s_%s_%d.wav", username, voiceType.String(), sequence)
 	u.Debugf("fileName:%s, speakerParam:%s", fileName, speakerParam)
 	videoDataReader := bytes.NewReader(voiceData)
 	if err := u.Train.SaveVideo(videoDataReader, username, speakerParam, fileName, flag); err != nil {
@@ -66,7 +66,7 @@ func (u *VideoUseCase) Upload(ctx context.Context, voiceData []byte, sequence in
 		// 修改Redis中的当前进度
 		u.RedisClient.HSet(ctx, key, "sequence", sequence+1)
 	}
-	return err
+	return nil
 }
 
 func (u *VideoUseCase) Download(ctx context.Context, sequence int, username string, speakerSerial int) ([]byte, error) {
@@ -77,4 +77,11 @@ func (u *VideoUseCase) Download(ctx context.Context, sequence int, username stri
 		return nil, err
 	}
 	return voiceData, nil
+}
+
+func (u *VideoUseCase) Commit(ctx context.Context, username, speakerParam string) error {
+	if err := u.Train.SaveVideo(nil, username, speakerParam, "", applet.Flag_end); err != nil {
+		return err
+	}
+	return nil
 }

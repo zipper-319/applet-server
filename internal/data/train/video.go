@@ -38,16 +38,20 @@ type UploadResponse struct {
 
 func (t *Train) SaveVideo(videoContent io.Reader, tenantCode string, speakerId string, fileName string, flag applet.Flag) error {
 	path := "/voice/upload"
-
 	bodyBuf := &bytes.Buffer{}
 	writer := multipart.NewWriter(bodyBuf)
-	part, err := writer.CreateFormFile("file", fileName)
-	if err != nil {
-		return err
+
+	if videoContent != nil && fileName != "" {
+		part, err := writer.CreateFormFile("file", fileName)
+		if err != nil {
+			return err
+		}
+		io.Copy(part, videoContent)
 	}
-	io.Copy(part, videoContent)
+
 	writer.WriteField("tenant_code", tenantCode)
 	writer.WriteField("speaker_id", speakerId)
+
 	if flag == applet.Flag_start {
 		writer.WriteField("flag", "start")
 	} else if flag == applet.Flag_continue {

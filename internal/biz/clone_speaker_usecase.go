@@ -47,7 +47,9 @@ func (uc *CloneSpeakerUseCase) GetSpeakerList(ctx context.Context, username stri
 			UpdateTime:   v.UpdatedAt.Unix(),
 		})
 	}
-	uc.repo.UpdateStatus(ctx, finishedSpeakerIdList)
+	if len(finishedSpeakerIdList) != 0 {
+		uc.repo.UpdateStatus(ctx, finishedSpeakerIdList)
+	}
 	return &applet.GetCloneSpeakerResult{
 		CloneSpeakerList: speakerList,
 		TrainTime:        util.DefaultTrainDuration,
