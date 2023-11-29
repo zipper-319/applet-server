@@ -61,17 +61,21 @@ func (s *VoiceDataOperationService) GetProgress(ctx context.Context, req *pb.Pro
 
 	progressKey := fmt.Sprintf("%s:%s:%s", util.REDIS_KEY_AWS_S3_USER_Prefix, username, req.VoiceType)
 	sequence, err := s.uc.Data.RedisClient.HGet(ctx, progressKey, "sequence").Int64()
-
-	finishedKey := fmt.Sprintf("finishedTime:%s:%s", username, req.VoiceType)
-	finishedTime, err := s.uc.Data.RedisClient.Get(ctx, finishedKey).Int64()
-	if err == redis.Nil {
-		finishedTime = 0
-	} else {
-		return nil, errors.New("redis error")
+	if err != nil && err != redis.Nil {
+		return nil, fmt.Errorf("HGet sequence failed:%v", err)
 	}
+	//finishedKey := fmt.Sprintf("finishedTime:%s:%s", username, req.VoiceType)
+	//finishedTime, err := s.uc.Data.RedisClient.Get(ctx, finishedKey).Int64()
+	//if err != nil {
+	//	if err == redis.Nil {
+	//		finishedTime = 0
+	//	} else {
+	//		return nil, fmt.Errorf("get finishedTime failed:%v", err)
+	//	}
+	//}
+
 	return &pb.ProgressResData{
 		CurrentNumber: int32(sequence),
-		FinishedTime:  finishedTime,
 	}, nil
 }
 func (s *VoiceDataOperationService) DownloadVoice(ctx context.Context, req *pb.DownloadReqData) (*pb.DownloadResData, error) {
@@ -88,15 +92,20 @@ func (s *VoiceDataOperationService) Commit(ctx context.Context, req *pb.CommitRe
 	//for i := 0; i < voiceText.VoiceDataSize[req.VoiceType]; i++ {
 	//	s3NameList = append(s3NameList, fmt.Sprintf("%s/%d.pcm", username, i))
 	//}
-	key := fmt.Sprintf("finishedTime:%s:%s", username, req.VoiceType)
+	progressKey := fmt.Sprintf("%s:%s:%s", util.REDIS_KEY_AWS_S3_USER_Prefix, username, req.VoiceType)
+	speakerParam, err := s.uc.RedisClient.HGet(ctx, progressKey, "speaker").Result()
+	if err != nil && err != redis.Nil {
+		return nil, fmt.Errorf("get speaker failed:%v", err)
+	}
+
+	key := fmt.Sprintf("finishedTime:%s:%s", username, speakerParam)
 
 	if s.uc.RedisClient.SetNX(ctx, key, time.Now().Unix(), 0).Val() {
-		progressKey := fmt.Sprintf("%s:%s:%s", util.REDIS_KEY_AWS_S3_USER_Prefix, username, req.VoiceType)
-		speakerParam := s.uc.RedisClient.HGet(ctx, progressKey, "speaker").String()
+
 		if err := s.uc.Commit(ctx, username, speakerParam); err != nil {
 			return nil, err
 		}
-		if err := s.speaker.CreateSpeaker(ctx, username, speakerParam, req.Speaker); err != nil {
+		if err := s.speaker.CreateSpeaker(ctx, username, req.Speaker,speakerParam ); err != nil {
 			return nil, err
 		}
 

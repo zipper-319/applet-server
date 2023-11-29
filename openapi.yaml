@@ -289,31 +289,31 @@ components:
         applet.v2.GetTTSConfigResult:
             type: object
             properties:
-                speakerList:
+                speaker_list:
                     type: array
                     items:
                         $ref: '#/components/schemas/applet.v2.SpeakerParameter'
-                speedList:
+                speed_list:
                     type: array
                     items:
                         type: string
-                volumeList:
+                volume_list:
                     type: array
                     items:
                         type: string
-                pitchList:
+                pitch_list:
                     type: array
                     items:
                         $ref: '#/components/schemas/applet.v2.MessagePitch'
-                emotionList:
+                emotion_list:
                     type: array
                     items:
                         $ref: '#/components/schemas/applet.v2.MessageEmotion'
-                movementList:
+                movement_list:
                     type: array
                     items:
                         $ref: '#/components/schemas/applet.v2.MessageMovement'
-                expressionList:
+                expression_list:
                     type: array
                     items:
                         $ref: '#/components/schemas/applet.v2.MessageExpression'
@@ -335,28 +335,28 @@ components:
             properties:
                 name:
                     type: string
-                chineseName:
+                chinese_name:
                     type: string
         applet.v2.MessageExpression:
             type: object
             properties:
                 name:
                     type: string
-                chineseName:
+                chinese_name:
                     type: string
         applet.v2.MessageMovement:
             type: object
             properties:
                 name:
                     type: string
-                chineseName:
+                chinese_name:
                     type: string
         applet.v2.MessagePitch:
             type: object
             properties:
                 name:
                     type: string
-                chineseName:
+                chinese_name:
                     type: string
         applet.v2.ProgressResData:
             type: object
@@ -371,15 +371,15 @@ components:
         applet.v2.SpeakerParameter:
             type: object
             properties:
-                speakerName:
+                speaker_name:
                     type: string
-                parameterSpeakerName:
+                parameter_speaker_name:
                     type: string
-                isSupportEmotion:
+                is_support_emotion:
                     type: boolean
-                isSupportMixedVoice:
+                is_support_mixed_voice:
                     type: boolean
-                isBelongClone:
+                is_belong_clone:
                     type: boolean
         applet.v2.UpdateCloneSpeakerRequest:
             type: object
