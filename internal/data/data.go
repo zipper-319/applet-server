@@ -47,6 +47,7 @@ type Session struct {
 	AgentId  int
 	Language *atomic.String
 	applet.MethodType
+	TtsParam atomic.Value
 }
 
 //func NewSession(robotId int32, position string, agentId int, language string) *Session {
@@ -107,4 +108,12 @@ func GenSession(req applet.ChatWSReq, username, sessionId string) *Session {
 		Language:   atomic.NewString(req.Language),
 		MethodType: req.Method,
 	}
+}
+
+type TTSParam struct {
+	Speed    string
+	Volume   string
+	Pitch    string
+	Emotions string
+	Speaker  string
 }

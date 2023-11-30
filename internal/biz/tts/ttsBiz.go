@@ -4,6 +4,7 @@ import (
 	"applet-server/internal/biz/tts/proto/v1"
 	"applet-server/internal/biz/tts/proto/v2"
 	"applet-server/internal/conf"
+	"applet-server/internal/data"
 	"context"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/uuid"
@@ -30,14 +31,18 @@ func NewTTSClient(c *conf.App, logger log.Logger) *TTSClient {
 	}
 }
 
-func (c *TTSClient) CallTTSV2(ctx context.Context, speaker, text, sessionId string, robotId int32) (chan []byte, error) {
-	traceId := uuid.New().String()
+func (c *TTSClient) CallTTSV2(ctx context.Context, ttsParam *data.TTSParam, text, language, sessionId, traceId string) (chan []byte, error) {
+
 	ttsV2Client := v2.NewCloudMindsTTSClient(c.ClientConn)
 	req := &v2.TtsReq{
 		Text:                 text,
-		ParameterSpeakerName: speaker,
+		ParameterSpeakerName: ttsParam.Speaker,
+		Volume:               ttsParam.Volume,
+		Speed:                ttsParam.Speed,
+		Pitch:                ttsParam.Pitch,
 		TraceId:              traceId,
 		RootTraceId:          sessionId,
+		Language:             language,
 		Version:              v2.ClientVersion_version,
 	}
 

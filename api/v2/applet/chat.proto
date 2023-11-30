@@ -9,7 +9,7 @@ import "google/api/annotations.proto";
 service ChatRoom {
   rpc chat(ChatWSReq) returns (ChatWSResp) {
     option (google.api.http) = {
-      get: "/api/v2/chat/ws"
+      get: "/api/v2/ws/chat"
     };
   };
 }
@@ -41,7 +41,7 @@ enum MessageType {
 
 message ChatClientMessage {
   string      content = 1;
-  MessageType type = 2;
+  MessageType message_type = 2;
   string      trace_id  = 3;
   bool        is_end = 4;   // 会话是否结束
 }
@@ -77,12 +77,12 @@ enum Vendor{
 
 
 message ChatParameter{
-  int32  speed = 1;
-  int32  volume = 2;
-  int32  pitch = 3;
-  string speaker = 4;
-  string style  = 5;
-  string language = 6;
+  string  speed = 1;
+  string  volume = 2;
+  string  pitch = 3;
+  string  speaker = 4;
+  string  style  = 5;
+  string  language = 6;
 }
 
 enum  ChatInterruptionType {

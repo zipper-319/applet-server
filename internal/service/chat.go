@@ -90,47 +90,57 @@ func (c *ChatService) HandlerVoice(ctx context.Context, vadOutChan chan []byte, 
 	return nil
 }
 func (c *ChatService) HandlerText(ctx context.Context, body string, conn *websocket.Conn, session *data.Session) error {
-	logger := log.NewHelper(log.With(c.Logger, "sessionId", session.Id, "traceId", session.TraceId))
-	logger.Infof("text:%s, session:%v", body, session)
+	logger := log.NewHelper(log.With(c.Logger, "sessionId", session.Id, "traceId", session.TraceId, "method", session.MethodType))
+	logger.Infof("text:%s", body)
 	if session == nil {
 		return errors.New("session is nil")
 	}
-	talkRespCh := make(chan data.TalkResp, 10)
-	if err := c.StreamingTalkByText(ctx, body, session, talkRespCh); err != nil {
-		return fmt.Errorf("talk by text error: %s", err.Error())
-	}
 	var wg sync.WaitGroup
-	for resp := range talkRespCh {
+	if session.MethodType == applet.MethodType_OnlyTTS {
 
-		if err := ws.SendingMsgToClient(conn, applet.ServiceType_Service_Nlp, resp); err != nil {
-			return err
+		wg.Add(1)
+		go c.HandlerTTSToClient(ctx, logger, body, "", session, conn, &wg)
+
+	} else {
+		talkRespCh := make(chan data.TalkResp, 10)
+		if err := c.StreamingTalkByText(ctx, body, session, talkRespCh); err != nil {
+			return fmt.Errorf("talk by text error: %s", err.Error())
 		}
-		for _, answer := range resp.AnsItem {
-			ttsText := strings.Replace(strings.TrimSpace(answer.Text), "\n", "", -1)
-			log.Debugf("sessionId:%s, ttsText:%s; start to call tts v2", session.TraceId, ttsText)
-			if ttsText == "" {
-				continue
+
+		for resp := range talkRespCh {
+
+			if err := ws.SendingMsgToClient(conn, applet.ServiceType_Service_Nlp, resp); err != nil {
+				return err
 			}
-			wg.Add(1)
-			go c.HandlerTTSToClient(ctx, logger, ttsText, answer.Lang, session, conn, &wg)
+			for _, answer := range resp.AnsItem {
+				ttsText := strings.Replace(strings.TrimSpace(answer.Text), "\n", "", -1)
+				log.Debugf("sessionId:%s, ttsText:%s; start to call tts v2", session.TraceId, ttsText)
+				if ttsText == "" {
+					continue
+				}
+				wg.Add(1)
+				go c.HandlerTTSToClient(ctx, logger, ttsText, answer.Lang, session, conn, &wg)
+			}
 		}
 	}
+
 	if err := ws.SendFinishedMsgToClient(conn, applet.ServiceType_Service_Nlp, ""); err != nil {
 		return err
 	}
 	wg.Wait()
 
-	logger.Debugf("sessionId:%s, talk by text finished", session.TraceId)
+	logger.Debugf("HandlerText finished;")
 	return nil
 }
 
 func (c *ChatService) HandlerTTSToClient(ctx context.Context, logger *log.Helper, ttsText, language string, session *data.Session, conn *websocket.Conn, wg *sync.WaitGroup) {
-	logger.Debugf("sessionId:%s, ttsText:%s, start to call tts", session.TraceId, ttsText)
 	defer func() {
 		logger.Infof("sessionId:%s,ttsText:%s, tts finished", session.TraceId, ttsText)
 		wg.Done()
 	}()
-	ttsChan, err := c.CallTTSV2(ctx, ttsText, language, session.TraceId, session.RobotId)
+	ttsParam := session.TtsParam.Load().(*data.TTSParam)
+	log.Debugf("start to call tts; sessionId:%s, ttsText:%s, ttsParam:%+v", session.TraceId, ttsText, ttsParam)
+	ttsChan, err := c.CallTTSV2(ctx, ttsParam, ttsText, language, session.Id, session.TraceId)
 	if err != nil {
 		logger.Errorf("sessionId:%s,ttsText:%s, call tts error:%v", session.TraceId, ttsText, err)
 		return

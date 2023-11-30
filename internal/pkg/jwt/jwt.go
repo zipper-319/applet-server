@@ -22,6 +22,7 @@ var NotVerify = []string{
 	"GetVersion",
 	"GetSpeaker",
 	"UploadFiles",
+	"chat",
 }
 
 const (

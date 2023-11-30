@@ -37,9 +37,11 @@ func ChatWebsocketHandler(srv ChatWebsocketServer) func(ctx http.Context) error 
 
 	return func(ctx http.Context) error {
 		var in applet.ChatWSReq
+		log.Debugf("ChatWebsocketHandler: %v", ctx.Request().Header)
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
+		log.Debugf("ChatWebsocketHandler: %v", in)
 		if in.Method == applet.MethodType_TypeUnknown {
 			return errors.New("method type is empty")
 		}
@@ -51,6 +53,7 @@ func ChatWebsocketHandler(srv ChatWebsocketServer) func(ctx http.Context) error 
 		if err != nil {
 			return err
 		}
+
 		h := ctx.Middleware(func(subCtx context.Context, req interface{}) (interface{}, error) {
 
 			upgrade := NewWsUpgrade(subProtocol)
@@ -63,6 +66,13 @@ func ChatWebsocketHandler(srv ChatWebsocketServer) func(ctx http.Context) error 
 			defer conn.Close()
 			sessionId := uuid.New().String()
 			session := data.GenSession(in, tokenInfo.Username, sessionId)
+			ttsParam := &data.TTSParam{
+				Speaker: "DaXiaoFang",
+				Speed:   "3",
+				Volume:  "3",
+			}
+			session.TtsParam.Store(ttsParam)
+
 			awaitTime := 15 * time.Second
 			connectTimer := time.NewTimer(awaitTime)
 
@@ -108,7 +118,7 @@ func ChatWebsocketHandler(srv ChatWebsocketServer) func(ctx http.Context) error 
 					log.Errorf("[websocket] read message error: %v", err)
 					return nil, err
 				}
-				log.Debugf("sessionId:%s;reset:%t", in.SessionId, connectTimer.Reset(awaitTime))
+				log.Debugf("sessionId:%s;reset:%t", session.Id, connectTimer.Reset(awaitTime))
 
 				switch messageType {
 				case websocket.CloseMessage:
@@ -134,7 +144,7 @@ func ChatWebsocketHandler(srv ChatWebsocketServer) func(ctx http.Context) error 
 					//log.Debugf("message: %s", message)
 					// use to debug
 					if err := json.Unmarshal(message, &chatMsg); err != nil {
-						log.Errorf("sessionId:%s; err:%v", in.SessionId, err)
+						log.Errorf("message:%s, sessionId:%s; err:%v", message, in.SessionId, err)
 						if strings.HasPrefix(string(message), "text:") {
 							text := strings.Trim(string(message), "text:")
 							session.TraceId = chatMsg.TraceId
@@ -144,12 +154,13 @@ func ChatWebsocketHandler(srv ChatWebsocketServer) func(ctx http.Context) error 
 						}
 						break
 					}
-					if chatMsg.Type == applet.MessageType_chat_text {
+					log.Debugf("chatMsg:%v", chatMsg)
+					if chatMsg.MessageType == applet.MessageType_chat_text {
 
 						ctxText := context.Background()
 						go srv.HandlerText(ctxText, chatMsg.Content, conn, session)
 					}
-					if chatMsg.Type == applet.MessageType_chat_voice {
+					if chatMsg.MessageType == applet.MessageType_chat_voice {
 
 						if vadInputCh != nil {
 							voice, err := base64.StdEncoding.DecodeString(chatMsg.Content)
@@ -163,7 +174,7 @@ func ChatWebsocketHandler(srv ChatWebsocketServer) func(ctx http.Context) error 
 							}
 						}
 					}
-					if chatMsg.Type == applet.MessageType_chat_interruption {
+					if chatMsg.MessageType == applet.MessageType_chat_interruption {
 						if cancelText != nil {
 							cancelText()
 						}
@@ -174,13 +185,27 @@ func ChatWebsocketHandler(srv ChatWebsocketServer) func(ctx http.Context) error 
 						log.Debugf("[websocket] interruption;sessionId:%s, traceId:%s, err:%v", in.SessionId, chatMsg.TraceId, err)
 					}
 
-					if chatMsg.Type == applet.MessageType_chat_parameter {
+					if chatMsg.MessageType == applet.MessageType_chat_parameter {
 						var parameter applet.ChatParameter
 						if err := json.Unmarshal([]byte(chatMsg.Content), &parameter); err != nil {
 							log.Errorf("[websocket] unmarshal parameter error: %v\n", err)
 							ws.SendErrMsgToClient(conn, applet.ServiceType_Service_VAD, err.Error())
 						} else {
 							session.Language.Store(parameter.Language)
+							ttsParamNew := session.TtsParam.Load().(*data.TTSParam)
+							if parameter.Pitch != "" {
+								ttsParamNew.Pitch = parameter.Pitch
+							}
+							if parameter.Speed != "" {
+								ttsParamNew.Speed = parameter.Speed
+							}
+							if parameter.Volume != "" {
+								ttsParamNew.Volume = parameter.Volume
+							}
+							if parameter.Speaker != "" {
+								ttsParamNew.Speaker = parameter.Speaker
+							}
+							session.TtsParam.Store(ttsParamNew)
 						}
 					}
 
