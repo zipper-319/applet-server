@@ -83,6 +83,7 @@ func (c *ChatService) HandlerVoice(ctx context.Context, vadOutChan chan []byte, 
 
 		}
 	}
+	wg.Wait()
 	if err := ws.SendFinishedMsgToClient(conn, applet.ServiceType_Service_Nlp, ""); err != nil {
 		return err
 	}
@@ -123,11 +124,10 @@ func (c *ChatService) HandlerText(ctx context.Context, body string, conn *websoc
 			}
 		}
 	}
-
+	wg.Wait()
 	if err := ws.SendFinishedMsgToClient(conn, applet.ServiceType_Service_Nlp, ""); err != nil {
 		return err
 	}
-	wg.Wait()
 
 	logger.Debugf("HandlerText finished;")
 	return nil
