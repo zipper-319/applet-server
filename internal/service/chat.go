@@ -140,7 +140,7 @@ func (c *ChatService) HandlerTTSToClient(ctx context.Context, logger *log.Helper
 	}()
 	ttsParam := session.TtsParam.Load().(*data.TTSParam)
 	log.Debugf("start to call tts; sessionId:%s, ttsText:%s, ttsParam:%+v", session.TraceId, ttsText, ttsParam)
-	ttsChan, err := c.CallTTSV2(ctx, ttsParam, ttsText, language, session.Id, session.TraceId)
+	ttsChan, err := c.CallTTSV2(ctx, session.Username, ttsParam, ttsText, language, session.Id, session.TraceId)
 	if err != nil {
 		logger.Errorf("sessionId:%s,ttsText:%s, call tts error:%v", session.TraceId, ttsText, err)
 		return

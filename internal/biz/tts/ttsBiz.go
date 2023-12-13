@@ -31,10 +31,11 @@ func NewTTSClient(c *conf.App, logger log.Logger) *TTSClient {
 	}
 }
 
-func (c *TTSClient) CallTTSV2(ctx context.Context, ttsParam *data.TTSParam, text, language, sessionId, traceId string) (chan []byte, error) {
+func (c *TTSClient) CallTTSV2(ctx context.Context, username string, ttsParam *data.TTSParam, text, language, sessionId, traceId string) (chan []byte, error) {
 
 	ttsV2Client := v2.NewCloudMindsTTSClient(c.ClientConn)
 	req := &v2.TtsReq{
+		Userspace:            username,
 		Text:                 text,
 		ParameterSpeakerName: ttsParam.Speaker,
 		Volume:               ttsParam.Volume,
