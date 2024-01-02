@@ -35,7 +35,9 @@ func (uc *CloneSpeakerUseCase) GetSpeakerList(ctx context.Context, username stri
 		status := v.IsFinish
 		if !status {
 			status = util.IsSpeakerExist(userSpaceSpeakers, v.SpeakerParam)
-			finishedSpeakerIdList = append(finishedSpeakerIdList, v.Id)
+			if status{
+				finishedSpeakerIdList = append(finishedSpeakerIdList, v.Id)
+			}
 		}
 		speakerList = append(speakerList, &applet.GetCloneSpeakerResult_CloneSpeaker{
 			Id:           v.Id,
