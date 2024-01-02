@@ -77,5 +77,5 @@ func (m *CloneSpeakerModel) UpdateStatus(ctx context.Context, ids []int64) error
 
 func (m *CloneSpeakerModel) Delete(ctx context.Context, id int64) error {
 	db := m.db.WithContext(ctx)
-	return db.Where("id = ?", id).Delete(CloneSpeaker{}).Error
+	return db.Where("id = ?", id).Delete(&CloneSpeaker{}).Error
 }
