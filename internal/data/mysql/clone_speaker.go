@@ -41,7 +41,7 @@ func (m *CloneSpeakerModel) GetCloneSpeakerList(ctx context.Context, username st
 func (m *CloneSpeakerModel) GetUserSpeakerCount(ctx context.Context, username string) (int64, error) {
 	var total int64
 	var db = m.db.WithContext(ctx)
-	db = db.Model(&CloneSpeaker{})
+	db = db.Unscoped().Model(&CloneSpeaker{})
 	db = db.Select(`*`)
 	db = db.Where("username = ?", username)
 	db = db.Count(&total)
