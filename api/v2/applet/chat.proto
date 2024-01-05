@@ -76,28 +76,31 @@ enum Vendor{
 }
 
 message TTSParameter {
-  string  speed = 1;
-  string  volume = 2;
-  string  pitch = 3;
-  string  speaker = 4;
-  bool    IsClone = 5;
+
 }
 
 message ASRParameter {
-  int32 service_provider = 1;  // 0:达闼  1：Google  2：科大讯飞  3:CPAll
-  int32  language_type = 2; //语言类型：    0:CH  1:EN 2:TCH 3:JA 4:ES 5:TH
-  int32 service_type = 3;  //服务类型： 0:通用  1:数码通讯  2：医疗康养
+
 }
 
 
 
 message ChatParameter{
-  TTSParameter tts = 1;
-  ASRParameter asr = 2;
-  int32   agent = 3;
-  int32   env_type = 4;
-  string  language = 5;
-  string  position = 6;
+  // tts
+  string  speed = 1;
+  string  volume = 2;
+  string  pitch = 3;
+  string  speaker = 4;
+  int32   is_clone = 5;  // 1: 不是克隆， 2：是克隆
+  // asr
+  int32 service_provider = 10;  // 1:达闼  2：Google  3：科大讯飞  4:CPAll
+  int32  language_type = 11; //语言类型：    1:CH  2:EN 3:TCH 4:JA 5:ES 6:TH
+  int32 service_type = 12;  //服务类型： 1:通用  2:数码通讯  3：医疗康养
+
+  int32   agent = 21;
+  int32   env_type = 22;   // 1:
+  string  language =23;
+  string  position = 24;
 }
 
 enum  ChatInterruptionType {
