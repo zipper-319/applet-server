@@ -75,14 +75,29 @@ enum Vendor{
   VENDOR_CPAll = 3;
 }
 
-
-message ChatParameter{
+message TTSParameter {
   string  speed = 1;
   string  volume = 2;
   string  pitch = 3;
   string  speaker = 4;
-  string  style  = 5;
-  string  language = 6;
+  bool    IsClone = 5;
+}
+
+message ASRParameter {
+  int32 service_provider = 1;  // 0:达闼  1：Google  2：科大讯飞  3:CPAll
+  int32  language_type = 2; //语言类型：    0:CH  1:EN 2:TCH 3:JA 4:ES 5:TH
+  int32 service_type = 3;  //服务类型： 0:通用  1:数码通讯  2：医疗康养
+}
+
+
+
+message ChatParameter{
+  TTSParameter tts = 1;
+  ASRParameter asr = 2;
+  int32   agent = 3;
+  int32   env_type = 4;
+  string  language = 5;
+  string  position = 6;
 }
 
 enum  ChatInterruptionType {

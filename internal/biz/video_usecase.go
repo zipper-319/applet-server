@@ -50,7 +50,7 @@ func (u *VideoUseCase) Upload(ctx context.Context, voiceData []byte, sequence in
 		if err != nil {
 			return err
 		}
-		speakerParam = fmt.Sprintf("%s_%s_%d", username, voiceType, count+1)
+		speakerParam = fmt.Sprintf("%s%s%d", username, voiceType, count+1)
 		u.RedisClient.HSet(ctx, key, "speaker", speakerParam)
 	}
 	// 上传音频到aws s3对象中

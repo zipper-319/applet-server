@@ -116,4 +116,5 @@ type TTSParam struct {
 	Pitch    string
 	Emotions string
 	Speaker  string
+	IsClone  bool
 }

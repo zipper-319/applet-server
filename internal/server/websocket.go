@@ -193,18 +193,19 @@ func ChatWebsocketHandler(srv ChatWebsocketServer) func(ctx http.Context) error 
 						} else {
 							session.Language.Store(parameter.Language)
 							ttsParamNew := session.TtsParam.Load().(*data.TTSParam)
-							if parameter.Pitch != "" {
-								ttsParamNew.Pitch = parameter.Pitch
+							if parameter.Tts.Pitch != "" {
+								ttsParamNew.Pitch = parameter.Tts.Pitch
 							}
-							if parameter.Speed != "" {
-								ttsParamNew.Speed = parameter.Speed
+							if parameter.Tts.Speed != "" {
+								ttsParamNew.Speed = parameter.Tts.Speed
 							}
-							if parameter.Volume != "" {
-								ttsParamNew.Volume = parameter.Volume
+							if parameter.Tts.Volume != "" {
+								ttsParamNew.Volume = parameter.Tts.Volume
 							}
-							if parameter.Speaker != "" {
-								ttsParamNew.Speaker = parameter.Speaker
+							if parameter.Tts.Speaker != "" {
+								ttsParamNew.Speaker = parameter.Tts.Speaker
 							}
+							ttsParamNew.IsClone = parameter.Tts.IsClone
 							session.TtsParam.Store(ttsParamNew)
 						}
 					}
