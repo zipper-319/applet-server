@@ -91,11 +91,11 @@ message ChatParameter{
   string  volume = 2;
   string  pitch = 3;
   string  speaker = 4;
-  int32   is_clone = 5;  // 1: 不是克隆， 2：是克隆
+  int32   is_clone = 5 [json_name = "is_clone"];  // 1: 不是克隆， 2：是克隆
   // asr
-  int32 service_provider = 10;  // 1:达闼  2：Google  3：科大讯飞  4:CPAll
-  int32  language_type = 11; //语言类型：    1:CH  2:EN 3:TCH 4:JA 5:ES 6:TH
-  int32 service_type = 12;  //服务类型： 1:通用  2:数码通讯  3：医疗康养
+  int32 service_provider = 10 [json_name = "service_provider"];  // 1:达闼  2：Google  3：科大讯飞  4:CPAll
+  int32  language_type = 11 [json_name = "language_type"]; //语言类型：    1:CH  2:EN 3:TCH 4:JA 5:ES 6:TH
+  int32 service_type = 12 [json_name = "service_type"];;  //服务类型： 1:通用  2:数码通讯  3：医疗康养
 
   int32   agent = 21;
   int32   env_type = 22;   // 1:
