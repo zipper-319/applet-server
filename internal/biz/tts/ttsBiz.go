@@ -35,7 +35,6 @@ func (c *TTSClient) CallTTSV2(ctx context.Context, username string, ttsParam *da
 
 	ttsV2Client := v2.NewCloudMindsTTSClient(c.ClientConn)
 	req := &v2.TtsReq{
-		Userspace:            username,
 		Text:                 text,
 		ParameterSpeakerName: ttsParam.Speaker,
 		Volume:               ttsParam.Volume,
@@ -45,6 +44,10 @@ func (c *TTSClient) CallTTSV2(ctx context.Context, username string, ttsParam *da
 		RootTraceId:          sessionId,
 		Language:             language,
 		Version:              v2.ClientVersion_version,
+	}
+
+	if ttsParam.IsClone{
+		req.Userspace = username
 	}
 
 	response, err := ttsV2Client.Call(ctx, req)

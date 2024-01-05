@@ -191,7 +191,8 @@ func ChatWebsocketHandler(srv ChatWebsocketServer) func(ctx http.Context) error 
 							log.Errorf("[websocket] unmarshal parameter error: %v\n", err)
 							ws.SendErrMsgToClient(conn, applet.ServiceType_Service_VAD, err.Error())
 						} else {
-							session.Language.Store(parameter.Language)
+
+							log.Debugf("[websocket] parameter;sessionId:%s, traceId:%s, parameter:%v", in.SessionId, chatMsg.TraceId, parameter)
 							ttsParamNew := session.TtsParam.Load().(*data.TTSParam)
 							if parameter.Pitch != "" {
 								ttsParamNew.Pitch = parameter.Pitch
