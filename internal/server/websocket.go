@@ -124,9 +124,8 @@ func ChatWebsocketHandler(srv ChatWebsocketServer) func(ctx http.Context) error 
 				case websocket.CloseMessage:
 					return nil, nil
 				case websocket.BinaryMessage:
-					if err := conn.WriteMessage(websocket.BinaryMessage, []byte("")); err != nil {
-						fmt.Errorf("[websocket] write pong message error: %v", err)
-						return nil, err
+					if vadInputCh != nil && len(message) > 0 {
+						vadInputCh <- message
 					}
 				case websocket.PingMessage:
 					if err := conn.WriteMessage(websocket.PongMessage, []byte("")); err != nil {

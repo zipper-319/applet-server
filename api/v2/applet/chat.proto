@@ -122,3 +122,8 @@ enum MethodType{
   AsrNlp        = 5;
   AsrNlpTTS     = 6;
 }
+
+enum  ChatStatus{
+  activated = 0;
+  sleep = 1;
+}

@@ -21,6 +21,9 @@ app:
     # 172.16.23.85:30811
     addr: 172.16.13.121:31402
     timeout: 10s
+  feedback:
+    addr: 172.16.23.85:31053
+    timeout: 10s
 
 data:
   database:

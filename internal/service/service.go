@@ -8,7 +8,7 @@ import (
 )
 
 // ProviderSet is service providers.
-var ProviderSet = wire.NewSet(NewVoiceDataOperationService, NewAccountService, NewCloneSpeakerService, NewTTSServiceService, NewChatService)
+var ProviderSet = wire.NewSet(NewVoiceDataOperationService, NewAccountService, NewCloneSpeakerService, NewTTSServiceService, NewChatService, NewFeedbackService)
 
 type ChatWebsocketServer interface {
 	HandlerVoice(ctx context.Context, body chan []byte, conn *websocket.Conn, session *data.Session) error

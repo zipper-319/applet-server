@@ -48,6 +48,21 @@ paths:
                 "200":
                     description: OK
                     content: {}
+    /api/v2/feedback/collect:
+        post:
+            tags:
+                - Feedback
+            operationId: Feedback_Collect
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/applet.v2.CollectReq'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
     /api/v2/login:
         get:
             tags:
@@ -229,6 +244,18 @@ components:
                 message:
                     type: string
                 Metadata:
+                    type: string
+        applet.v2.CollectReq:
+            type: object
+            properties:
+                agentId:
+                    type: integer
+                    format: int32
+                language:
+                    type: string
+                question:
+                    type: string
+                answer:
                     type: string
         applet.v2.CommitRequest:
             type: object
@@ -414,5 +441,6 @@ tags:
     - name: Account
     - name: ChatRoom
     - name: CloneSpeaker
+    - name: Feedback
     - name: TTSService
     - name: VoiceDataOperation

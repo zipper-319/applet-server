@@ -49,11 +49,16 @@ message App{
     string addr = 1;
     google.protobuf.Duration timeout = 2;
   }
+  message Feedback {
+    string addr = 1;
+    google.protobuf.Duration timeout = 2;
+  }
   ASR asr = 1;
   TTS tts = 2;
   Nlp nlp = 3;
   Jwt  auth = 4;
   User user = 5;
+  Feedback feedback = 6;
 }
 
 message Data {
