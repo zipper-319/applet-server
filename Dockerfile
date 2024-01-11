@@ -1,4 +1,4 @@
-FROM harbor.cloudminds.com/library/debian9:slim.CM-v1.4
+FROM harbor.cloudminds.com/library/ubuntu:bionic.CM-v1.4
 
 ENV PROJECT=smartvoice-platform
 ENV MODULE=applet-server
@@ -11,7 +11,8 @@ EXPOSE 9300
 
 RUN apt-get update && apt-get install -y curl
 
-COPY internal/vad/libs /app/libs
+COPY internal/vad/libs  libs
+COPY internal/pkg/voiceText internal/pkg/voiceText
 
 COPY  ./bin/applet-server /app/applet-server
 COPY run.sh /etc/services.d/applet/run
