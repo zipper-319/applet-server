@@ -4,14 +4,12 @@ import (
 	"applet-server/api/v2/applet"
 	"bufio"
 	"os"
-	"path"
 	"path/filepath"
-	"runtime"
 	"strings"
 )
 
 var VoiceDataSize map[applet.VoiceType]int
-var voiceDir string
+var voiceDir = "./voiceText"
 
 func init() {
 	var (
@@ -19,11 +17,11 @@ func init() {
 		content []string
 	)
 	VoiceDataSize = make(map[applet.VoiceType]int, 0)
-	_, fileName, _, ok := runtime.Caller(0)
-	if !ok {
-		panic("runtime.Caller failed")
-	}
-	voiceDir = path.Dir(fileName)
+	//_, fileName, _, ok := runtime.Caller(0)
+	//if !ok {
+	//	panic("runtime.Caller failed")
+	//}
+	//voiceDir = path.Dir(fileName)
 
 	for _, v := range applet.VoiceType_value {
 		content, err = ReadText(applet.VoiceType(v))
