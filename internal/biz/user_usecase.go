@@ -3,17 +3,17 @@ package biz
 import (
 	"applet-server/internal/data"
 	"applet-server/internal/data/mysql"
+	"applet-server/internal/pkg/log"
 	"context"
-	"github.com/go-kratos/kratos/v2/log"
 )
 
 type UserUseCase struct {
 	*data.Data
-	*log.Helper
+	*log.MyLogger
 }
 
-func NewUserUseCase(data *data.Data, logger log.Logger) *UserUseCase {
-	return &UserUseCase{Data: data, Helper: log.NewHelper(logger)}
+func NewUserUseCase(data *data.Data, logger *log.MyLogger) *UserUseCase {
+	return &UserUseCase{Data: data, MyLogger: logger}
 }
 
 func (u *UserUseCase) GetUserByNameAndPhone(ctx context.Context, name string, phone string) (*mysql.User, error) {

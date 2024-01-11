@@ -4,22 +4,22 @@ import (
 	"applet-server/api/v2/applet"
 	"applet-server/internal/data"
 	"applet-server/internal/data/mysql"
+	"applet-server/internal/pkg/log"
 	"applet-server/internal/pkg/util"
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/go-kratos/kratos/v2/log"
 	"github.com/pkg/errors"
 	"github.com/redis/go-redis/v9"
 )
 
 type VideoUseCase struct {
 	*data.Data
-	*log.Helper
+	*log.MyLogger
 }
 
-func NewVideoUseCase(data *data.Data, logger log.Logger) *VideoUseCase {
-	return &VideoUseCase{Data: data, Helper: log.NewHelper(logger)}
+func NewVideoUseCase(data *data.Data, logger *log.MyLogger) *VideoUseCase {
+	return &VideoUseCase{Data: data, MyLogger: logger}
 }
 
 func (u *VideoUseCase) Upload(ctx context.Context, voiceData []byte, sequence int, username string, voiceType applet.VoiceType) error {

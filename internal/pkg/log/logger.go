@@ -1,10 +1,9 @@
-package MyLog
+package log
 
 import (
 	"applet-server/internal/conf"
 	"errors"
 	"fmt"
-	kratoszap "github.com/go-kratos/kratos/contrib/log/zap/v2"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
 	"go.uber.org/zap"
@@ -15,15 +14,16 @@ import (
 	"time"
 )
 
-var defaultLogger = log.DefaultLogger
+var defaultLogger *MyLogger
 var ProviderSet = wire.NewSet(NewLogger)
 
 type MyLogger struct {
-	logger     *kratoszap.Logger
+	logger     *zap.Logger
 	logSetting *conf.Log
 	hook       *lumberjack.Logger
 	// 日期
 	date string
+	messageKey  string
 }
 
 func (l *MyLogger) Write(data []byte) (n int, err error) {
@@ -58,9 +58,10 @@ func (l *MyLogger) Write(data []byte) (n int, err error) {
 	return n, e
 }
 
-func NewLogger(confLog *conf.Log) log.Logger {
+func NewLogger(confLog *conf.Log) *MyLogger {
 	myLogger := &MyLogger{
 		logSetting: confLog,
+		messageKey: "msg",
 	}
 	logLevel := strings.ToLower(confLog.Level)
 
@@ -77,6 +78,7 @@ func NewLogger(confLog *conf.Log) log.Logger {
 		NameKey:        "log",
 		CallerKey:      "line",
 		StacktraceKey:  "stacktrace",
+
 		LineEnding:     zapcore.DefaultLineEnding,
 		EncodeLevel:    zapcore.LowercaseLevelEncoder,  // 小写编码器
 		EncodeTime:     zapcore.ISO8601TimeEncoder,     // ISO8601 UTC 时间格式
@@ -119,11 +121,101 @@ func NewLogger(confLog *conf.Log) log.Logger {
 	if confLog.ShowLine {
 		logger = logger.WithOptions(zap.AddCaller())
 	}
-	logger = logger.WithOptions(zap.AddCallerSkip(2))
-	myLogger.logger = kratoszap.NewLogger(logger)
-	defaultLogger = myLogger.logger
-	log.SetLogger(defaultLogger)
-	return myLogger.logger
+
+	myLogger.logger = logger.WithOptions(zap.AddCallerSkip(2))
+	defaultLogger = myLogger
+	return myLogger
+}
+
+func (l *MyLogger) Log(level log.Level, keyvals ...interface{}) error {
+	keyLen := len(keyvals)
+	if keyLen == 0 || keyLen%2 != 0 {
+		l.logger.Warn(fmt.Sprint("Keyvalues must appear in pairs: ", keyvals))
+		return nil
+	}
+
+	data := make([]zap.Field, 0, (keyLen/2)+1)
+	for i := 0; i < keyLen; i += 2 {
+		data = append(data, zap.Any(fmt.Sprint(keyvals[i]), keyvals[i+1]))
+	}
+
+	switch level {
+	case log.LevelDebug:
+		l.logger.Debug("", data...)
+	case log.LevelInfo:
+		l.logger.Info("", data...)
+	case log.LevelWarn:
+		l.logger.Warn("", data...)
+	case log.LevelError:
+		l.logger.Error("", data...)
+	case log.LevelFatal:
+		l.logger.Fatal("", data...)
+	}
+	return nil
+}
+
+// Debug logs a message at debug level.
+func (l *MyLogger) Debug(a ...interface{}) {
+	l.Log(log.LevelDebug, l.messageKey, a)
+}
+
+func Debug(a ...interface{}) {
+	defaultLogger.Log(log.LevelDebug, defaultLogger.messageKey, a)
+}
+
+// Debugf logs a message at debug level.
+func (l *MyLogger) Debugf(format string, a ...interface{}) {
+	_ = l.Log(log.LevelDebug, l.messageKey, fmt.Sprintf(format, a...))
+}
+
+func Debugf(format string, a ...interface{}) {
+	defaultLogger.Log(log.LevelDebug, defaultLogger.messageKey, fmt.Sprintf(format, a...))
+}
+
+// Debug logs a message at debug level.
+func (l *MyLogger) Info(a ...interface{}) {
+	l.Log(log.LevelInfo, l.messageKey, a)
+}
+
+func Info(a ...interface{}) {
+	defaultLogger.Log(log.LevelInfo, defaultLogger.messageKey, a)
+}
+
+// Debugf logs a message at debug level.
+func (l *MyLogger) Infof(format string, a ...interface{}) {
+	_ = l.Log(log.LevelInfo, l.messageKey, fmt.Sprintf(format, a...))
+}
+
+func Infof(format string, a ...interface{}) {
+	defaultLogger.Log(log.LevelInfo, defaultLogger.messageKey, fmt.Sprintf(format, a...))
+}
+
+// Debug logs a message at debug level.
+func (l *MyLogger) Warn(a ...interface{}) {
+	l.Log(log.LevelWarn, l.messageKey, a)
+}
+
+func Warn(a ...interface{}) {
+	defaultLogger.Log(log.LevelWarn, defaultLogger.messageKey, a)
+}
+
+// Debugf logs a message at debug level.
+func (l *MyLogger) Warnf(format string, a ...interface{}) {
+	_ = l.Log(log.LevelWarn, l.messageKey, fmt.Sprintf(format, a...))
+}
+
+// Debug logs a message at debug level.
+func (l *MyLogger) Error(a ...interface{}) {
+	l.Log(log.LevelError, l.messageKey, a)
+}
+
+func Error(a ...interface{}) {
+	defaultLogger.Log(log.LevelError, defaultLogger.messageKey, a)
+}
+
+// Debugf logs a message at debug level.
+func (l *MyLogger) Errorf(format string, a ...interface{}) {
+	_ = l.Log(log.LevelError, l.messageKey, fmt.Sprintf(format, a...))
 }
 
 // getLogFilePath get the log file save path

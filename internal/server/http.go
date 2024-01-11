@@ -5,8 +5,8 @@ import (
 	"applet-server/internal/conf"
 	"applet-server/internal/pkg/apiHook"
 	jwtUtil "applet-server/internal/pkg/jwt"
+	"applet-server/internal/pkg/log"
 	"applet-server/internal/service"
-	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/metrics"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"github.com/go-kratos/kratos/v2/middleware/validate"
@@ -16,7 +16,7 @@ import (
 
 // NewHTTPServer new an HTTP server.
 func NewHTTPServer(c *conf.Server, middlewares http.ServerOption, vdSer *service.VoiceDataOperationService, account *service.AccountService,
-	speakerService *service.CloneSpeakerService, ttsService *service.TTSServiceService, chat *service.ChatService, feedbackService *service.FeedbackService, logger log.Logger) *http.Server {
+	speakerService *service.CloneSpeakerService, ttsService *service.TTSServiceService, chat *service.ChatService, feedbackService *service.FeedbackService) *http.Server {
 	var opts = []http.ServerOption{
 		middlewares,
 	}
@@ -46,7 +46,7 @@ func NewHTTPServer(c *conf.Server, middlewares http.ServerOption, vdSer *service
 	return srv
 }
 
-func NewMiddlewares(logger log.Logger, appConfig *conf.App) http.ServerOption {
+func NewMiddlewares(logger *log.MyLogger, appConfig *conf.App) http.ServerOption {
 	return http.Middleware(
 		validate.Validator(),
 		tracing.Server(),

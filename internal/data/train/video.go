@@ -3,11 +3,11 @@ package train
 import (
 	"applet-server/api/v2/applet"
 	"applet-server/internal/conf"
+	"applet-server/internal/pkg/log"
 	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/go-kratos/kratos/v2/log"
 	"github.com/idoubi/goz"
 	"io"
 	"mime/multipart"
@@ -19,13 +19,13 @@ const url = "http://172.16.23.85:30221"
 
 type Train struct {
 	Addr string
-	*log.Helper
+	*log.MyLogger
 }
 
-func NewTrain(config *conf.Data, logger log.Logger) *Train {
+func NewTrain(config *conf.Data, logger *log.MyLogger) *Train {
 	return &Train{
-		Addr:   config.Train.Addr,
-		Helper: log.NewHelper(logger),
+		Addr:     config.Train.Addr,
+		MyLogger: logger,
 	}
 }
 

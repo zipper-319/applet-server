@@ -31,36 +31,36 @@ import (
 // Injectors from wire.go:
 
 // wireApp init kratos application.
-func wireApp(confServer *conf.Server, app *conf.App, confData *conf.Data, log *conf.Log) (*kratos.App, func(), error) {
-	logger := MyLog.NewLogger(log)
-	s3Service, err := s3.NewS3Service(confData, logger)
+func wireApp(confServer *conf.Server, app *conf.App, confData *conf.Data, confLog *conf.Log) (*kratos.App, func(), error) {
+	myLogger := log.NewLogger(confLog)
+	s3Service, err := s3.NewS3Service(confData, myLogger)
 	if err != nil {
 		return nil, nil, err
 	}
 	client := cache.NewRedisCache(confData)
 	db := mysql.NewDataDB(confData)
 	minioClient := minio.NewMinioClient(confData)
-	trainTrain := train.NewTrain(confData, logger)
+	trainTrain := train.NewTrain(confData, myLogger)
 	dataData, err := data.NewData(s3Service, client, db, minioClient, trainTrain)
 	if err != nil {
 		return nil, nil, err
 	}
-	videoUseCase := biz.NewVideoUseCase(dataData, logger)
-	ttsClient := tts.NewTTSClient(app, logger)
+	videoUseCase := biz.NewVideoUseCase(dataData, myLogger)
+	ttsClient := tts.NewTTSClient(app, myLogger)
 	cloneSpeakerUseCase := biz.NewCloneSpeakerUseCase(dataData, ttsClient)
-	voiceDataOperationService := service.NewVoiceDataOperationService(videoUseCase, cloneSpeakerUseCase, logger)
-	grpcServer := server.NewGRPCServer(confServer, voiceDataOperationService, logger)
-	serverOption := server.NewMiddlewares(logger, app)
-	userUseCase := biz.NewUserUseCase(dataData, logger)
+	voiceDataOperationService := service.NewVoiceDataOperationService(videoUseCase, cloneSpeakerUseCase, myLogger)
+	grpcServer := server.NewGRPCServer(confServer, voiceDataOperationService)
+	serverOption := server.NewMiddlewares(myLogger, app)
+	userUseCase := biz.NewUserUseCase(dataData, myLogger)
 	accountService := service.NewAccountService(userUseCase)
 	cloneSpeakerService := service.NewCloneSpeakerService(cloneSpeakerUseCase)
 	ttsServiceService := service.NewTTSServiceService(ttsClient, cloneSpeakerUseCase)
-	asRControllerClient := asr.NewAsRControllerClient(app, logger)
-	talkClient := nlp.NewTalkClient(app, logger)
-	chatService := service.NewChatService(logger, ttsClient, asRControllerClient, talkClient)
+	asRControllerClient := asr.NewAsRControllerClient(app, myLogger)
+	talkClient := nlp.NewTalkClient(app, myLogger)
+	chatService := service.NewChatService(ttsClient, asRControllerClient, talkClient, myLogger)
 	feedbackService := service.NewFeedbackService(app)
-	httpServer := server.NewHTTPServer(confServer, serverOption, voiceDataOperationService, accountService, cloneSpeakerService, ttsServiceService, chatService, feedbackService, logger)
-	kratosApp := newApp(logger, grpcServer, httpServer)
+	httpServer := server.NewHTTPServer(confServer, serverOption, voiceDataOperationService, accountService, cloneSpeakerService, ttsServiceService, chatService, feedbackService)
+	kratosApp := newApp(myLogger, grpcServer, httpServer)
 	return kratosApp, func() {
 	}, nil
 }

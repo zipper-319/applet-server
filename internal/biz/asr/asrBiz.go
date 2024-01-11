@@ -4,9 +4,9 @@ import (
 	pb "applet-server/internal/biz/asr/proto"
 	"applet-server/internal/conf"
 	"applet-server/internal/data"
+	"applet-server/internal/pkg/log"
 	"context"
 	"fmt"
-	"github.com/go-kratos/kratos/v2/log"
 	"google.golang.org/grpc"
 	"io"
 	"strconv"
@@ -15,10 +15,10 @@ import (
 
 type AsRControllerClient struct {
 	*grpc.ClientConn
-	*log.Helper
+	*log.MyLogger
 }
 
-func NewAsRControllerClient(c *conf.App, logger log.Logger) *AsRControllerClient {
+func NewAsRControllerClient(c *conf.App, logger *log.MyLogger) *AsRControllerClient {
 	ctx, _ := context.WithTimeout(context.Background(), c.Asr.GetTimeout().AsDuration())
 	conn, err := grpc.DialContext(ctx, c.Asr.GetAddr(),
 		grpc.WithInsecure(),
@@ -28,7 +28,7 @@ func NewAsRControllerClient(c *conf.App, logger log.Logger) *AsRControllerClient
 	}
 	return &AsRControllerClient{
 		ClientConn: conn,
-		Helper:     log.NewHelper(log.With(logger, "Model", "AsRControllerClient")),
+		MyLogger:   logger,
 	}
 }
 

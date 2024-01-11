@@ -65,6 +65,8 @@ func ChatWebsocketHandler(srv ChatWebsocketServer) func(ctx http.Context) error 
 			log.Infof("[websocket] connect from %s", conn.RemoteAddr().String())
 			defer conn.Close()
 			sessionId := uuid.New().String()
+			//logger := log.With(log.DefaultLogger, "sessionId", sessionId, "username", tokenInfo.Username)
+
 			session := data.GenSession(in, tokenInfo.Username, sessionId)
 			ttsParam := &data.TTSParam{
 				Speaker: "DaXiaoFang",

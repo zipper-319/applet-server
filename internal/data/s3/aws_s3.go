@@ -2,6 +2,7 @@ package s3
 
 import (
 	"applet-server/internal/conf"
+	"applet-server/internal/pkg/log"
 	"bytes"
 	"context"
 	"github.com/aws/aws-sdk-go/aws"
@@ -10,7 +11,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/go-kratos/kratos/v2/log"
 	"github.com/pkg/errors"
 	"io"
 	"time"
@@ -18,13 +18,13 @@ import (
 
 type S3Service struct {
 	*s3.S3
-	*log.Helper
+	*log.MyLogger
 	Timeout int64
 	Bucket  string
 }
 
-func NewS3Service(config *conf.Data, logger log.Logger) (*S3Service, error) {
-	log.NewHelper(logger).Infof("endpoint:%s;region:%s, access key:%s, secret key:%s", config.S3.Endpoint, config.S3.Region, config.S3.AccessKey, config.S3.SecretKey)
+func NewS3Service(config *conf.Data, logger *log.MyLogger) (*S3Service, error) {
+	logger.Infof("endpoint:%s;region:%s, access key:%s, secret key:%s", config.S3.Endpoint, config.S3.Region, config.S3.AccessKey, config.S3.SecretKey)
 	sess, err := session.NewSession()
 	if err != nil {
 		return nil, err
@@ -39,10 +39,10 @@ func NewS3Service(config *conf.Data, logger log.Logger) (*S3Service, error) {
 	})
 
 	return &S3Service{
-		S3:      service,
-		Helper:  log.NewHelper(logger),
-		Timeout: int64(config.S3.Timeout),
-		Bucket:  config.S3.Bucket,
+		S3:       service,
+		MyLogger: logger,
+		Timeout:  int64(config.S3.Timeout),
+		Bucket:   config.S3.Bucket,
 	}, nil
 }
 

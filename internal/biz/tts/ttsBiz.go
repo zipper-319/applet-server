@@ -5,8 +5,8 @@ import (
 	"applet-server/internal/biz/tts/proto/v2"
 	"applet-server/internal/conf"
 	"applet-server/internal/data"
+	"applet-server/internal/pkg/log"
 	"context"
-	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/uuid"
 	"google.golang.org/grpc"
 	"io"
@@ -14,10 +14,10 @@ import (
 
 type TTSClient struct {
 	*grpc.ClientConn
-	*log.Helper
+	*log.MyLogger
 }
 
-func NewTTSClient(c *conf.App, logger log.Logger) *TTSClient {
+func NewTTSClient(c *conf.App, logger *log.MyLogger) *TTSClient {
 	ctx, _ := context.WithTimeout(context.Background(), c.Tts.GetTimeout().AsDuration())
 	conn, err := grpc.DialContext(ctx, c.Tts.GetAddr(),
 		grpc.WithInsecure(),
@@ -27,7 +27,7 @@ func NewTTSClient(c *conf.App, logger log.Logger) *TTSClient {
 	}
 	return &TTSClient{
 		ClientConn: conn,
-		Helper:     log.NewHelper(log.With(logger, "Model", "TTS")),
+		MyLogger:   logger,
 	}
 }
 
@@ -46,13 +46,13 @@ func (c *TTSClient) CallTTSV2(ctx context.Context, username string, ttsParam *da
 		Version:              v2.ClientVersion_version,
 	}
 
-	if ttsParam.IsClone{
+	if ttsParam.IsClone {
 		req.Userspace = username
 	}
 
 	response, err := ttsV2Client.Call(ctx, req)
 	if err != nil {
-		log.Errorf("traceId:%s,Text:%s, err;%v", traceId, text, err)
+		c.Errorf("traceId:%s,Text:%s, err;%v", traceId, text, err)
 		return nil, err
 	}
 
@@ -60,14 +60,14 @@ func (c *TTSClient) CallTTSV2(ctx context.Context, username string, ttsParam *da
 
 	go func() {
 		defer func() {
-			log.Debugf("sessionId:%s, traceId:%s; text:%s,finish to CallTTSV2, next to send tts video", sessionId, traceId, text)
+			c.Debugf("sessionId:%s, traceId:%s; text:%s,finish to CallTTSV2, next to send tts video", sessionId, traceId, text)
 			close(ttsChan)
 		}()
 		var number = 0
 		for {
 			select {
 			case <-ctx.Done():
-				log.Infof("traceId:%s;  TestTTSV2 return after cancel\n", traceId)
+				c.Infof("traceId:%s;  TestTTSV2 return after cancel\n", traceId)
 				return
 			default:
 				temp, err := response.Recv()
@@ -75,11 +75,11 @@ func (c *TTSClient) CallTTSV2(ctx context.Context, username string, ttsParam *da
 					return
 				}
 				if err != nil {
-					log.Errorf("sessionId:%s,traceId:%s,Text:%s, err;%v", sessionId, traceId, text, err)
+					c.Errorf("sessionId:%s,traceId:%s,Text:%s, err;%v", sessionId, traceId, text, err)
 					return
 				}
 				if temp.ErrorCode != 0 {
-					log.Errorf("tts 内部服务错误：%d", temp.ErrorCode)
+					c.Errorf("tts 内部服务错误：%d", temp.ErrorCode)
 				}
 
 				if audio, ok := temp.ResultOneof.(*v2.TtsRes_SynthesizedAudio); ok {
@@ -108,7 +108,7 @@ func (c *TTSClient) CallTTSV1(ctx context.Context, speaker, text, language, sess
 
 	response, err := ttsV1Client.Call(ctx, req)
 	if err != nil {
-		log.Errorf("traceId:%s,Text:%s, err;%v", traceId, text, err)
+		c.Errorf("traceId:%s,Text:%s, err;%v", traceId, text, err)
 		return nil, err
 	}
 
@@ -116,14 +116,14 @@ func (c *TTSClient) CallTTSV1(ctx context.Context, speaker, text, language, sess
 
 	go func() {
 		defer func() {
-			log.Debugf("sessionId:%s, traceId:%s; text:%s,finish to CallTTSV2, next to send tts video", sessionId, traceId, text)
+			c.Debugf("sessionId:%s, traceId:%s; text:%s,finish to CallTTSV2, next to send tts video", sessionId, traceId, text)
 			close(ttsChan)
 		}()
 		var number = 0
 		for {
 			select {
 			case <-ctx.Done():
-				log.Infof("traceId:%s;  TestTTSV2 return after cancel\n", traceId)
+				c.Infof("traceId:%s;  TestTTSV2 return after cancel\n", traceId)
 				return
 			default:
 				temp, err := response.Recv()
@@ -131,7 +131,7 @@ func (c *TTSClient) CallTTSV1(ctx context.Context, speaker, text, language, sess
 					return
 				}
 				if err != nil {
-					log.Errorf("sessionId:%s,traceId:%s,Text:%s, err;%v", sessionId, traceId, text, err)
+					c.Errorf("sessionId:%s,traceId:%s,Text:%s, err;%v", sessionId, traceId, text, err)
 					return
 				}
 				if temp.Status == v1.PcmStatus_STATUS_MID {

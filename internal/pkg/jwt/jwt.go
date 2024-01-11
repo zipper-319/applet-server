@@ -1,9 +1,9 @@
 package jwtUtil
 
 import (
+	"applet-server/internal/pkg/log"
 	"context"
 	"github.com/go-kratos/kratos/v2/errors"
-	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/golang-jwt/jwt/v4"
@@ -71,8 +71,7 @@ func WithClaims(claims jwt.Claims) Option {
 	}
 }
 
-func Server(logger log.Logger, jwtKey string, expire time.Duration, opts ...Option) middleware.Middleware {
-	log.NewHelper(logger).Infof("jwtKey:%s", jwtKey)
+func Server(logger *log.MyLogger, jwtKey string, expire time.Duration, opts ...Option) middleware.Middleware {
 	keyFunc = KeyProvider(jwtKey)
 	expireTime = expire
 	o := &options{
@@ -95,7 +94,7 @@ func Server(logger log.Logger, jwtKey string, expire time.Duration, opts ...Opti
 				}
 				if !isNotVerify {
 					jwtToken := header.RequestHeader().Get(authorizationKey)
-					log.NewHelper(logger).Infof("jwtToken:%s", jwtToken)
+					logger.Infof("jwtToken:%s", jwtToken)
 					if jwtToken == "" {
 						return nil, ErrMissingJwtToken
 					}
@@ -134,9 +133,9 @@ func Server(logger log.Logger, jwtKey string, expire time.Duration, opts ...Opti
 					}
 					if claims, ok := tokenInfo.Claims.(*IdentityClaims); ok {
 						ctx = context.WithValue(ctx, Identifier{}, claims)
-						log.NewHelper(logger).Infof("tokenInfo.Claims is *IdentityClaims")
+						logger.Infof("tokenInfo.Claims is *IdentityClaims")
 					} else {
-						log.NewHelper(logger).Error("tokenInfo.Claims is not *IdentityClaims")
+						logger.Error("tokenInfo.Claims is not *IdentityClaims")
 					}
 
 				}

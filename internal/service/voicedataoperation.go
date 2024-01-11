@@ -5,13 +5,13 @@ import (
 	"applet-server/internal/biz"
 	"applet-server/internal/data"
 	jwtUtil "applet-server/internal/pkg/jwt"
+	"applet-server/internal/pkg/log"
 	"applet-server/internal/pkg/util"
 	"applet-server/internal/pkg/voiceText"
 	"context"
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/go-kratos/kratos/v2/log"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/redis/go-redis/v9"
@@ -22,15 +22,14 @@ import (
 
 type VoiceDataOperationService struct {
 	pb.UnimplementedVoiceDataOperationServer
-	uc *biz.VideoUseCase
-	*log.Helper
+	uc      *biz.VideoUseCase
 	speaker *biz.CloneSpeakerUseCase
+	*log.MyLogger
 }
 
-func NewVoiceDataOperationService(useCase *biz.VideoUseCase, speakerUseCase *biz.CloneSpeakerUseCase, logger log.Logger) *VoiceDataOperationService {
+func NewVoiceDataOperationService(useCase *biz.VideoUseCase, speakerUseCase *biz.CloneSpeakerUseCase, logger *log.MyLogger) *VoiceDataOperationService {
 	return &VoiceDataOperationService{
 		uc:      useCase,
-		Helper:  log.NewHelper(logger),
 		speaker: speakerUseCase,
 	}
 }
@@ -105,7 +104,7 @@ func (s *VoiceDataOperationService) Commit(ctx context.Context, req *pb.CommitRe
 		if err := s.uc.Commit(ctx, username, speakerParam); err != nil {
 			return nil, err
 		}
-		if err := s.speaker.CreateSpeaker(ctx, username, req.Speaker,speakerParam ); err != nil {
+		if err := s.speaker.CreateSpeaker(ctx, username, req.Speaker, speakerParam); err != nil {
 			return nil, err
 		}
 

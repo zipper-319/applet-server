@@ -4,11 +4,11 @@ import (
 	"applet-server/internal/biz/nlp/proto"
 	"applet-server/internal/conf"
 	"applet-server/internal/data"
+	"applet-server/internal/pkg/log"
 	"applet-server/internal/pkg/util"
 	"context"
 	"fmt"
 	"github.com/bitly/go-simplejson"
-	"github.com/go-kratos/kratos/v2/log"
 	"github.com/idoubi/goz"
 	"google.golang.org/grpc"
 	"strconv"
@@ -17,10 +17,10 @@ import (
 
 type TalkClient struct {
 	*grpc.ClientConn
-	*log.Helper
+	*log.MyLogger
 }
 
-func NewTalkClient(c *conf.App, logger log.Logger) *TalkClient {
+func NewTalkClient(c *conf.App, logger *log.MyLogger) *TalkClient {
 	ctx, _ := context.WithTimeout(context.Background(), c.Asr.GetTimeout().AsDuration())
 	conn, err := grpc.DialContext(ctx, c.Nlp.GetAddr(),
 		grpc.WithInsecure(),
@@ -30,7 +30,7 @@ func NewTalkClient(c *conf.App, logger log.Logger) *TalkClient {
 	}
 	return &TalkClient{
 		ClientConn: conn,
-		Helper:     log.NewHelper(log.With(logger, "Model", "AsRControllerClient")),
+		MyLogger:   logger,
 	}
 }
 
