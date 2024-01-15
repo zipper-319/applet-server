@@ -40,6 +40,9 @@ func NewFeedbackService(app *conf.App) *FeedbackService {
 }
 
 func (s *FeedbackService) Collect(ctx context.Context, req *pb.CollectReq) (*emptypb.Empty, error) {
+	if req.QaType == pb.QAType_CommonQA{
+		req.AgentId = 0
+	}
 	qaReq := &CollectQAReq{
 		Agentid:  req.AgentId,
 		Lang:     req.Language,

@@ -18,10 +18,15 @@ service  Feedback {
     };
   }
 }
+enum QAType {
+  CommonQA =  0;
+  UserQA   =  1;
+}
 
 message  CollectReq {
   int32  agent_id = 1;
   string language = 2;
   string question = 3;
   string answer = 4;
+  QAType qa_type = 5;
 }

@@ -257,6 +257,9 @@ components:
                     type: string
                 answer:
                     type: string
+                qaType:
+                    type: integer
+                    format: enum
         applet.v2.CommitRequest:
             type: object
             properties:

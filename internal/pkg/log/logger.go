@@ -2,6 +2,7 @@ package log
 
 import (
 	"applet-server/internal/conf"
+	"context"
 	"errors"
 	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
@@ -22,8 +23,8 @@ type MyLogger struct {
 	logSetting *conf.Log
 	hook       *lumberjack.Logger
 	// 日期
-	date string
-	messageKey  string
+	date       string
+	messageKey string
 }
 
 func (l *MyLogger) Write(data []byte) (n int, err error) {
@@ -73,11 +74,11 @@ func NewLogger(confLog *conf.Log) *MyLogger {
 	}
 
 	encoderConfig := zapcore.EncoderConfig{
-		TimeKey:        "time",
-		LevelKey:       "level",
-		NameKey:        "log",
-		CallerKey:      "line",
-		StacktraceKey:  "stacktrace",
+		TimeKey:       "time",
+		LevelKey:      "level",
+		NameKey:       "log",
+		CallerKey:     "line",
+		StacktraceKey: "stacktrace",
 
 		LineEnding:     zapcore.DefaultLineEnding,
 		EncodeLevel:    zapcore.LowercaseLevelEncoder,  // 小写编码器
@@ -125,6 +126,17 @@ func NewLogger(confLog *conf.Log) *MyLogger {
 	myLogger.logger = logger.WithOptions(zap.AddCallerSkip(2))
 	defaultLogger = myLogger
 	return myLogger
+}
+
+func (l *MyLogger) WithContext(ctx context.Context) {
+	traceId := ctx.Value("trace_id").(string)
+	if traceId != "" {
+		l.logger.With(zap.String("trace_id", ctx.Value("trace_id").(string)))
+	}
+	sessionId := ctx.Value("session_id").(string)
+	if sessionId != "" {
+		l.logger.With(zap.String("session_id", ctx.Value("session_id").(string)))
+	}
 }
 
 func (l *MyLogger) Log(level log.Level, keyvals ...interface{}) error {

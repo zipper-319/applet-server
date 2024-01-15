@@ -37,11 +37,10 @@ func ChatWebsocketHandler(srv ChatWebsocketServer) func(ctx http.Context) error 
 
 	return func(ctx http.Context) error {
 		var in applet.ChatWSReq
-		log.Debugf("ChatWebsocketHandler: %v", ctx.Request().Header)
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
-		log.Debugf("ChatWebsocketHandler: %v", in)
+		log.Debugf("ChatWSReq: %v", in)
 		if in.Method == applet.MethodType_TypeUnknown {
 			return errors.New("method type is empty")
 		}
@@ -65,9 +64,8 @@ func ChatWebsocketHandler(srv ChatWebsocketServer) func(ctx http.Context) error 
 			log.Infof("[websocket] connect from %s", conn.RemoteAddr().String())
 			defer conn.Close()
 			sessionId := uuid.New().String()
-			//logger := log.With(log.DefaultLogger, "sessionId", sessionId, "username", tokenInfo.Username)
-
 			session := data.GenSession(in, tokenInfo.Username, sessionId)
+			subCtx = context.WithValue(subCtx, "session_id", sessionId)
 			ttsParam := &data.TTSParam{
 				Speaker: "DaXiaoFang",
 				Speed:   "3",
