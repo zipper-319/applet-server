@@ -7,12 +7,10 @@ import (
 	"applet-server/internal/biz/tts"
 	"applet-server/internal/data"
 	"applet-server/internal/pkg/log"
-	"applet-server/internal/pkg/ws"
 	"context"
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/gorilla/websocket"
 	"strings"
 	"sync"
 )
@@ -33,7 +31,7 @@ func NewChatService(ttsClient *tts.TTSClient, asrClient *asr.AsRControllerClient
 	}
 }
 
-func (c *ChatService) HandlerVoice(ctx context.Context, vadOutChan chan []byte, conn *websocket.Conn, session *data.Session) error {
+func (c *ChatService) HandlerVoice(ctx context.Context, vadOutChan chan []byte, session *data.Session) error {
 	ctx, cancel := context.WithCancel(ctx)
 
 	defer func() {
@@ -55,10 +53,10 @@ func (c *ChatService) HandlerVoice(ctx context.Context, vadOutChan chan []byte, 
 		asrResult = asrText
 		c.Debugf("traceId:%s, asrResult:%s", session.TraceId, asrResult)
 		if asrResult != "" {
-			ws.SendingMsgToClient(conn, applet.ServiceType_Service_ASR, asrText)
+			session.SendingMsgToClient(applet.ServiceType_Service_ASR, asrText, false, "")
 		}
 	}
-	ws.SendFinishedMsgToClient(conn, applet.ServiceType_Service_ASR, asrResult)
+	session.SendingMsgToClient(applet.ServiceType_Service_ASR, asrResult, true, "")
 
 	talkRespCh := make(chan data.TalkResp, 10)
 	if err := c.TalkClient.StreamingTalkByText(ctx, asrResult, session, talkRespCh); err != nil {
@@ -69,7 +67,7 @@ func (c *ChatService) HandlerVoice(ctx context.Context, vadOutChan chan []byte, 
 
 	for resp := range talkRespCh {
 		c.Debugf("traceId:%s, resp:%v", session.TraceId, resp)
-		if err := ws.SendingMsgToClient(conn, applet.ServiceType_Service_Nlp, resp); err != nil {
+		if err := session.SendingMsgToClient(applet.ServiceType_Service_Nlp, resp, false, ""); err != nil {
 			return err
 		}
 		for _, answer := range resp.AnsItem {
@@ -79,18 +77,18 @@ func (c *ChatService) HandlerVoice(ctx context.Context, vadOutChan chan []byte, 
 				continue
 			}
 			wg.Add(1)
-			go c.HandlerTTSToClient(ctx, ttsText, answer.Lang, session, conn, &wg)
+			go c.HandlerTTSToClient(ctx, ttsText, answer.Lang, session, &wg)
 
 		}
 	}
 	wg.Wait()
-	if err := ws.SendFinishedMsgToClient(conn, applet.ServiceType_Service_Nlp, ""); err != nil {
+	if err := session.SendingMsgToClient(applet.ServiceType_Service_Nlp, "", true, ""); err != nil {
 		return err
 	}
 	c.Debugf("sessionId:%s, the sentence finished", session.Id)
 	return nil
 }
-func (c *ChatService) HandlerText(ctx context.Context, body string, conn *websocket.Conn, session *data.Session) error {
+func (c *ChatService) HandlerText(ctx context.Context, body string, session *data.Session) error {
 
 	c.Infof("text:%s", body)
 	if session == nil {
@@ -100,7 +98,7 @@ func (c *ChatService) HandlerText(ctx context.Context, body string, conn *websoc
 	if session.MethodType == applet.MethodType_OnlyTTS {
 
 		wg.Add(1)
-		go c.HandlerTTSToClient(ctx, body, "", session, conn, &wg)
+		go c.HandlerTTSToClient(ctx, body, "", session, &wg)
 
 	} else {
 		talkRespCh := make(chan data.TalkResp, 10)
@@ -110,7 +108,7 @@ func (c *ChatService) HandlerText(ctx context.Context, body string, conn *websoc
 
 		for resp := range talkRespCh {
 
-			if err := ws.SendingMsgToClient(conn, applet.ServiceType_Service_Nlp, resp); err != nil {
+			if err := session.SendingMsgToClient(applet.ServiceType_Service_Nlp, resp, false, ""); err != nil {
 				return err
 			}
 			for _, answer := range resp.AnsItem {
@@ -120,12 +118,12 @@ func (c *ChatService) HandlerText(ctx context.Context, body string, conn *websoc
 					continue
 				}
 				wg.Add(1)
-				go c.HandlerTTSToClient(ctx, ttsText, answer.Lang, session, conn, &wg)
+				go c.HandlerTTSToClient(ctx, ttsText, answer.Lang, session, &wg)
 			}
 		}
 	}
 	wg.Wait()
-	if err := ws.SendFinishedMsgToClient(conn, applet.ServiceType_Service_Nlp, ""); err != nil {
+	if err := session.SendingMsgToClient(applet.ServiceType_Service_Nlp, "", true, ""); err != nil {
 		return err
 	}
 
@@ -133,7 +131,7 @@ func (c *ChatService) HandlerText(ctx context.Context, body string, conn *websoc
 	return nil
 }
 
-func (c *ChatService) HandlerTTSToClient(ctx context.Context, ttsText, language string, session *data.Session, conn *websocket.Conn, wg *sync.WaitGroup) {
+func (c *ChatService) HandlerTTSToClient(ctx context.Context, ttsText, language string, session *data.Session, wg *sync.WaitGroup) {
 	defer func() {
 		c.Infof("sessionId:%s,ttsText:%s, tts finished", session.TraceId, ttsText)
 		wg.Done()
@@ -146,7 +144,7 @@ func (c *ChatService) HandlerTTSToClient(ctx context.Context, ttsText, language 
 		return
 	}
 	for ttsResp := range ttsChan {
-		if err := ws.SendingMsgToClient(conn, applet.ServiceType_Service_TTS, base64.RawStdEncoding.EncodeToString(ttsResp)); err != nil {
+		if err := session.SendingMsgToClient(applet.ServiceType_Service_TTS, base64.RawStdEncoding.EncodeToString(ttsResp), false, ""); err != nil {
 			c.Errorf("sessionId:%s,ttsText:%s, send tts error:%v", session.TraceId, ttsText, err)
 		}
 	}

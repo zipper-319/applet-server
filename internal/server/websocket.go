@@ -4,7 +4,6 @@ import (
 	"applet-server/api/v2/applet"
 	"applet-server/internal/data"
 	jwtUtil "applet-server/internal/pkg/jwt"
-	"applet-server/internal/pkg/ws"
 	"applet-server/internal/vad"
 	"context"
 	"encoding/base64"
@@ -24,8 +23,8 @@ var OperationChatWS = "/api/v2/ws/chat"
 type SessionKey struct{}
 
 type ChatWebsocketServer interface {
-	HandlerVoice(ctx context.Context, body chan []byte, conn *websocket.Conn, session *data.Session) error
-	HandlerText(ctx context.Context, body string, conn *websocket.Conn, session *data.Session) error
+	HandlerVoice(ctx context.Context, body chan []byte, session *data.Session) error
+	HandlerText(ctx context.Context, body string, session *data.Session) error
 }
 
 func RegisterChatWebsocketServer(s *http.Server, charService ChatWebsocketServer) {
@@ -64,7 +63,7 @@ func ChatWebsocketHandler(srv ChatWebsocketServer) func(ctx http.Context) error 
 			log.Infof("[websocket] connect from %s", conn.RemoteAddr().String())
 			defer conn.Close()
 			sessionId := uuid.New().String()
-			session := data.GenSession(in, tokenInfo.Username, sessionId)
+			session := data.GenSession(in, tokenInfo.Username, sessionId, conn)
 			subCtx = context.WithValue(subCtx, "session_id", sessionId)
 			ttsParam := &data.TTSParam{
 				Speaker: "DaXiaoFang",
@@ -85,7 +84,6 @@ func ChatWebsocketHandler(srv ChatWebsocketServer) func(ctx http.Context) error 
 				vadInputCh = make(chan []byte, 50)
 				vadDateInfo = &vad.DataInfo{
 					InputCh: vadInputCh,
-					Conn:    conn,
 					Session: session,
 					Server:  srv,
 				}
@@ -147,7 +145,7 @@ func ChatWebsocketHandler(srv ChatWebsocketServer) func(ctx http.Context) error 
 						if strings.HasPrefix(string(message), "text:") {
 							text := strings.Trim(string(message), "text:")
 							session.TraceId = chatMsg.TraceId
-							if err := srv.HandlerText(ctx, text, conn, session); err != nil {
+							if err := srv.HandlerText(ctx, text, session); err != nil {
 								return nil, err
 							}
 						}
@@ -157,7 +155,7 @@ func ChatWebsocketHandler(srv ChatWebsocketServer) func(ctx http.Context) error 
 					if chatMsg.MessageType == applet.MessageType_chat_text {
 
 						ctxText := context.Background()
-						go srv.HandlerText(ctxText, chatMsg.Content, conn, session)
+						go srv.HandlerText(ctxText, chatMsg.Content, session)
 					}
 					if chatMsg.MessageType == applet.MessageType_chat_voice {
 
@@ -188,7 +186,7 @@ func ChatWebsocketHandler(srv ChatWebsocketServer) func(ctx http.Context) error 
 						var parameter applet.ChatParameter
 						if err := json.Unmarshal([]byte(chatMsg.Content), &parameter); err != nil {
 							log.Errorf("[websocket] unmarshal parameter error: %v\n", err)
-							ws.SendErrMsgToClient(conn, applet.ServiceType_Service_VAD, err.Error())
+							session.SendingMsgToClient(applet.ServiceType_Service_VAD, "", true, err.Error())
 						} else {
 
 							log.Debugf("[websocket] parameter;sessionId:%s, traceId:%s, parameter:%v", in.SessionId, chatMsg.TraceId, parameter)

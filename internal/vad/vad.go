@@ -23,7 +23,6 @@ import (
 	"applet-server/internal/service"
 	"context"
 	"github.com/go-kratos/kratos/v2/log"
-	"github.com/gorilla/websocket"
 	"unsafe"
 )
 
@@ -44,7 +43,6 @@ type DataInfo struct {
 	InputCh    chan []byte
 	OutputCh   chan []byte
 	IsEnd      chan struct{}
-	Conn       *websocket.Conn
 	Session    *data.Session
 	Server     service.ChatWebsocketServer
 	LastCancel context.CancelFunc

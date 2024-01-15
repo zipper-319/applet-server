@@ -7,6 +7,8 @@ import (
 	"applet-server/internal/data/mysql"
 	"applet-server/internal/data/s3"
 	"applet-server/internal/data/train"
+	"applet-server/internal/pkg/ws"
+	"github.com/gorilla/websocket"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/atomic"
 	"gorm.io/gorm"
@@ -46,6 +48,7 @@ type Session struct {
 	Position string
 	AgentId  int
 	Language *atomic.String
+	*ws.WsClient
 	applet.MethodType
 	TtsParam atomic.Value
 }
@@ -81,14 +84,6 @@ type Answer struct {
 	VideoUrl string `json:"videoUrl"`
 }
 
-type ChatServerMessage struct {
-	ServiceType applet.ServiceType ` json:"service_type,omitempty"`
-	Content     interface{}        ` json:"content,omitempty"`
-	IsEnd       bool               `son:"is_end,omitempty"`
-	IsSuccess   bool               `json:"is_success,omitempty"`
-	ErrMsg      string             `json:"err_msg,omitempty"`
-}
-
 type FileObject struct {
 	File     io.Reader
 	FileName string
@@ -99,7 +94,7 @@ type FileObject struct {
 //	return &Session{TraceId: id, RobotId: robotId, Position: position, AgentId: agentId, Language: language}
 //}
 
-func GenSession(req applet.ChatWSReq, username, sessionId string) *Session {
+func GenSession(req applet.ChatWSReq, username, sessionId string, conn *websocket.Conn) *Session {
 	return &Session{
 		Id:         sessionId,
 		Username:   username,
@@ -107,6 +102,7 @@ func GenSession(req applet.ChatWSReq, username, sessionId string) *Session {
 		AgentId:    int(req.AgentId),
 		Language:   atomic.NewString(req.Language),
 		MethodType: req.Method,
+		WsClient:   ws.NewWsClient(conn),
 	}
 }
 
@@ -118,3 +114,5 @@ type TTSParam struct {
 	Speaker  string
 	IsClone  bool
 }
+
+

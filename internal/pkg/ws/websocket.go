@@ -2,50 +2,45 @@ package ws
 
 import (
 	"applet-server/api/v2/applet"
-	"applet-server/internal/data"
-	"github.com/go-kratos/kratos/v2/log"
+	"applet-server/internal/pkg/log"
 	"github.com/gorilla/websocket"
 	"sync"
 )
 
-var (
-	mutex sync.RWMutex
-)
+type WsClient struct {
+	*websocket.Conn
+	sync.RWMutex
+}
 
-func SendingMsgToClient(conn *websocket.Conn, msgType applet.ServiceType, content interface{}) error {
+type ChatServerMessage struct {
+	ServiceType applet.ServiceType ` json:"service_type,omitempty"`
+	Content     interface{}        ` json:"content,omitempty"`
+	IsEnd       bool               `son:"is_end,omitempty"`
+	IsSuccess   bool               `json:"is_success,omitempty"`
+	ErrMsg      string             `json:"err_msg,omitempty"`
+}
+
+func NewWsClient(conn *websocket.Conn) *WsClient {
+	return &WsClient{Conn: conn}
+}
+
+func (c *WsClient) SendingMsgToClient(msgType applet.ServiceType, content interface{}, isEnd bool, errMsg string) error {
 	log.Debugf("sending message to Client;msgType %s ", msgType)
-	mutex.Lock()
-	defer mutex.Unlock()
-	return conn.WriteJSON(data.ChatServerMessage{
+	c.Lock()
+	defer c.Unlock()
+	if errMsg != "" {
+		return c.WriteJSON(ChatServerMessage{
+			ServiceType: msgType,
+			IsEnd:       true,
+			IsSuccess:   false,
+			ErrMsg:      errMsg,
+		})
+	}
+	return c.WriteJSON(ChatServerMessage{
 		ServiceType: msgType,
 		Content:     content,
-		IsEnd:       false,
+		IsEnd:       isEnd,
 		IsSuccess:   true,
 		ErrMsg:      "",
-	})
-}
-
-func SendFinishedMsgToClient(conn *websocket.Conn, msgType applet.ServiceType, content interface{}) error {
-	mutex.Lock()
-	defer mutex.Unlock()
-	log.Debugf("finished to send  message to client; message type:%s", msgType)
-	return conn.WriteJSON(data.ChatServerMessage{
-		ServiceType: msgType,
-		Content:     content,
-		IsEnd:       true,
-		IsSuccess:   true,
-		ErrMsg:      "",
-	})
-}
-
-func SendErrMsgToClient(conn *websocket.Conn, msgType applet.ServiceType, errMsg string) error {
-	mutex.Lock()
-	defer mutex.Unlock()
-	log.Debugf("finished to send  message to client; message type:%s", msgType)
-	return conn.WriteJSON(data.ChatServerMessage{
-		ServiceType: msgType,
-		IsEnd:       true,
-		IsSuccess:   false,
-		ErrMsg:      errMsg,
 	})
 }
