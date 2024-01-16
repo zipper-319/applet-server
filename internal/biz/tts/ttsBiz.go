@@ -93,6 +93,7 @@ func (c *TTSClient) CallTTSV2(ctx context.Context, username string, ttsParam *da
 					if len(tempAudio) > 0 && audio.SynthesizedAudio.IsPunctuation == 1 {
 						ttsChan <- tempAudio
 						log.Infof("index:%d, pcm length:%d, status:%d", number, len(audio.SynthesizedAudio.Pcm), temp.Status)
+						tempAudio = nil
 					}
 				}
 			}
