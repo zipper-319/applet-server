@@ -73,6 +73,10 @@ func (c *TTSClient) CallTTSV2(ctx context.Context, username string, ttsParam *da
 			default:
 				temp, err := response.Recv()
 				if err == io.EOF {
+					if len(tempAudio) > 0{
+						ttsChan <- tempAudio
+						log.Infof("index:%d, pcm length:%d, status:%d", number, len(tempAudio), temp.Status)
+					}
 					return
 				}
 				if err != nil {
@@ -93,7 +97,7 @@ func (c *TTSClient) CallTTSV2(ctx context.Context, username string, ttsParam *da
 					log.Infof("index:%d, pcm length:%d, status:%d, tempAudio:%d; IsPunctuation:%d", number, len(audio.SynthesizedAudio.Pcm), temp.Status, len(tempAudio), audio.SynthesizedAudio.IsPunctuation)
 					if len(tempAudio) > 0 && audio.SynthesizedAudio.IsPunctuation == 1 {
 						ttsChan <- tempAudio
-						log.Infof("index:%d, pcm length:%d, status:%d", number, len(audio.SynthesizedAudio.Pcm), temp.Status)
+						log.Infof("index:%d, pcm length:%d, status:%d", number, len(tempAudio), temp.Status)
 						tempAudio = nil
 					}
 				}
