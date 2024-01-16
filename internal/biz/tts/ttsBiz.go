@@ -64,6 +64,7 @@ func (c *TTSClient) CallTTSV2(ctx context.Context, username string, ttsParam *da
 			close(ttsChan)
 		}()
 		var number = 0
+		var tempAudio []byte
 		for {
 			select {
 			case <-ctx.Done():
@@ -83,9 +84,16 @@ func (c *TTSClient) CallTTSV2(ctx context.Context, username string, ttsParam *da
 				}
 
 				if audio, ok := temp.ResultOneof.(*v2.TtsRes_SynthesizedAudio); ok {
+					if tempAudio == nil {
+						tempAudio = audio.SynthesizedAudio.Pcm
+					} else {
+						tempAudio = append(tempAudio, audio.SynthesizedAudio.Pcm...)
+					}
 					number += 1
 					log.Infof("index:%d, pcm length:%d, status:%d", number, len(audio.SynthesizedAudio.Pcm), temp.Status)
-					ttsChan <- audio.SynthesizedAudio.Pcm
+					if len(tempAudio) > 0 && audio.SynthesizedAudio.IsPunctuation == 1 {
+						ttsChan <- tempAudio
+					}
 				}
 			}
 		}
