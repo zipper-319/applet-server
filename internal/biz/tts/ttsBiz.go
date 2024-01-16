@@ -90,6 +90,7 @@ func (c *TTSClient) CallTTSV2(ctx context.Context, username string, ttsParam *da
 						tempAudio = append(tempAudio, audio.SynthesizedAudio.Pcm...)
 					}
 					number += 1
+					log.Infof("index:%d, pcm length:%d, status:%d, tempAudio:%d", number, len(audio.SynthesizedAudio.Pcm), temp.Status, len(tempAudio))
 					if len(tempAudio) > 0 && audio.SynthesizedAudio.IsPunctuation == 1 {
 						ttsChan <- tempAudio
 						log.Infof("index:%d, pcm length:%d, status:%d", number, len(audio.SynthesizedAudio.Pcm), temp.Status)
