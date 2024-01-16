@@ -29,8 +29,9 @@ type VoiceDataOperationService struct {
 
 func NewVoiceDataOperationService(useCase *biz.VideoUseCase, speakerUseCase *biz.CloneSpeakerUseCase, logger *log.MyLogger) *VoiceDataOperationService {
 	return &VoiceDataOperationService{
-		uc:      useCase,
-		speaker: speakerUseCase,
+		uc:       useCase,
+		speaker:  speakerUseCase,
+		MyLogger: logger,
 	}
 }
 
