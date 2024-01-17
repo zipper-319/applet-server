@@ -21,7 +21,6 @@ message ChatWSReq {
   string position = 2;
   string language = 3;
   int32  agent_id = 4;
-  string session_id = 5;
 }
 
 message ChatWSResp {
@@ -42,8 +41,6 @@ enum MessageType {
 message ChatClientMessage {
   string      content = 1;
   MessageType message_type = 2;
-  string      trace_id  = 3;
-  bool        is_end = 4;   // 会话是否结束
 }
 
 enum ServiceType {
@@ -60,6 +57,8 @@ message ChatServerMessage {
     bool is_end = 3;
     bool is_success = 4;
     string err_msg = 5;
+    string session_id = 6;
+    string question_id = 7;
 }
 
 enum  VADPauseMode {

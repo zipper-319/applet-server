@@ -31,8 +31,10 @@ func NewTTSClient(c *conf.App, logger *log.MyLogger) *TTSClient {
 	}
 }
 
-func (c *TTSClient) CallTTSV2(ctx context.Context, username string, ttsParam *data.TTSParam, text, language, sessionId, traceId string) (chan []byte, error) {
-
+func (c *TTSClient) CallTTSV2(ctx context.Context, session *data.Session, ttsParam *data.TTSParam, text, language string) (chan []byte, error) {
+	username := session.Username
+	traceId := ctx.Value("questionId").(string)
+	sessionId := ctx.Value("sessionId").(string)
 	ttsV2Client := v2.NewCloudMindsTTSClient(c.ClientConn)
 	req := &v2.TtsReq{
 		Text:                 text,
@@ -60,7 +62,7 @@ func (c *TTSClient) CallTTSV2(ctx context.Context, username string, ttsParam *da
 
 	go func() {
 		defer func() {
-			c.Debugf("sessionId:%s, traceId:%s; text:%s,finish to CallTTSV2, next to send tts video", sessionId, traceId, text)
+			c.WithContext(ctx).Debugf("sessionId:%s, traceId:%s; text:%s,finish to CallTTSV2, next to send tts video", sessionId, traceId, text)
 			close(ttsChan)
 		}()
 		var number = 0
@@ -73,7 +75,7 @@ func (c *TTSClient) CallTTSV2(ctx context.Context, username string, ttsParam *da
 			default:
 				temp, err := response.Recv()
 				if err == io.EOF {
-					if len(tempAudio) > 0{
+					if len(tempAudio) > 0 {
 						ttsChan <- tempAudio
 						log.Infof("index:%d, pcm length:%d; end status", number, len(tempAudio))
 					}
@@ -122,7 +124,7 @@ func (c *TTSClient) CallTTSV1(ctx context.Context, speaker, text, language, sess
 
 	response, err := ttsV1Client.Call(ctx, req)
 	if err != nil {
-		c.Errorf("traceId:%s,Text:%s, err;%v", traceId, text, err)
+		c.WithContext(ctx).Errorf("Text:%s, err;%v", text, err)
 		return nil, err
 	}
 
@@ -130,14 +132,14 @@ func (c *TTSClient) CallTTSV1(ctx context.Context, speaker, text, language, sess
 
 	go func() {
 		defer func() {
-			c.Debugf("sessionId:%s, traceId:%s; text:%s,finish to CallTTSV2, next to send tts video", sessionId, traceId, text)
+			c.WithContext(ctx).Debugf("text:%s,finish to CallTTSV2, next to send tts video", text)
 			close(ttsChan)
 		}()
 		var number = 0
 		for {
 			select {
 			case <-ctx.Done():
-				c.Infof("traceId:%s;  TestTTSV2 return after cancel\n", traceId)
+				c.WithContext(ctx).Info(" TestTTSV2 return after cancel\n")
 				return
 			default:
 				temp, err := response.Recv()
@@ -145,12 +147,12 @@ func (c *TTSClient) CallTTSV1(ctx context.Context, speaker, text, language, sess
 					return
 				}
 				if err != nil {
-					c.Errorf("sessionId:%s,traceId:%s,Text:%s, err;%v", sessionId, traceId, text, err)
+					c.WithContext(ctx).Errorf("Text:%s, err;%v", text, err)
 					return
 				}
 				if temp.Status == v1.PcmStatus_STATUS_MID {
 					number += 1
-					log.Infof("index:%d, pcm length:%d, status:%d", number, len(temp.Pcm), temp.Status)
+					c.WithContext(ctx).Debugf("index:%d, pcm length:%d, status:%d", number, len(temp.Pcm), temp.Status)
 					ttsChan <- temp.Pcm
 				}
 

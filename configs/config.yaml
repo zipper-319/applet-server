@@ -28,7 +28,7 @@ app:
 data:
   database:
     driver: mysql
-    source: root:@tcp(172.16.23.33:3306)/mp
+    source: root:cloudminds88@tcp(172.16.23.16:31376)/nlp_config
   redis:
     addr: 172.16.23.33:9527
     password: cloudminds88

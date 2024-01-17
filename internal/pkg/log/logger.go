@@ -129,14 +129,14 @@ func NewLogger(confLog *conf.Log) *MyLogger {
 }
 
 func (l *MyLogger) WithContext(ctx context.Context) *MyLogger {
-	traceId := ctx.Value("trace_id").(string)
+	questionId := ctx.Value("question_id").(string)
 	logger := l.logger
-	if traceId != "" {
-		logger = logger.With(zap.String("trace_id", ctx.Value("trace_id").(string)))
+	if questionId != "" {
+		logger = logger.With(zap.String("questionId", questionId))
 	}
 	sessionId := ctx.Value("session_id").(string)
 	if sessionId != "" {
-		logger = logger.With(zap.String("session_id", ctx.Value("session_id").(string)))
+		logger = logger.With(zap.String("session_id", sessionId))
 	}
 	return &MyLogger{
 		logger: logger,

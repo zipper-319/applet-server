@@ -1,4 +1,4 @@
-FROM harbor.cloudminds.com/library/ubuntu:bionic.CM-v1.4
+FROM harbor.cloudminds.com/library/docker:bionic.CM-v1.4
 
 ENV PROJECT=smartvoice-platform
 ENV MODULE=applet-server

@@ -220,10 +220,6 @@ paths:
                   schema:
                     type: integer
                     format: int32
-                - name: sessionId
-                  in: query
-                  schema:
-                    type: string
             responses:
                 "200":
                     description: OK

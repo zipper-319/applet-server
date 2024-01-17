@@ -35,18 +35,19 @@ func NewAsRControllerClient(c *conf.App, logger *log.MyLogger) *AsRControllerCli
 func (c *AsRControllerClient) StreamingRecognize(ctx context.Context, session *data.Session, voiceDataCh chan []byte, asrRecognizedText chan string) error {
 	client := pb.NewSpeechClient(c.ClientConn)
 	streamClient, err := client.StreamingRecognize(ctx)
+	questionId := ctx.Value("questionId").(string)
 	if err != nil {
-		c.Infof("streamingRecognize error: %v", err)
+		c.WithContext(ctx).Infof("streamingRecognize error: %v", err)
 		return err
 	}
 
 	// 接收流式返回结果
 	go ReceiveRecognizedText(streamClient, asrRecognizedText)
 
-	recognitionRequest := newRecognitionRequest(strconv.Itoa(int(session.RobotId)), session.Id, session.Language.Load(), session.TraceId, session.AgentId)
+	recognitionRequest := newRecognitionRequest(strconv.Itoa(int(session.RobotId)), session.Id, session.Language.Load(), questionId, session.AgentId)
 	awaitTime := 30 * time.Second
 	vadTimer := time.NewTimer(awaitTime)
-	c.Debug("recognitionRequest:", recognitionRequest)
+	c.WithContext(ctx).Debug("recognitionRequest:", recognitionRequest)
 
 	for {
 		select {
@@ -65,7 +66,7 @@ func (c *AsRControllerClient) StreamingRecognize(ctx context.Context, session *d
 			}
 
 		case <-vadTimer.C:
-			c.Debug("StreamingRecognize timeout")
+			c.WithContext(ctx).Debug("StreamingRecognize timeout")
 			goto END
 		}
 	}

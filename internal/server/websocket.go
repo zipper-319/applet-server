@@ -4,13 +4,12 @@ import (
 	"applet-server/api/v2/applet"
 	"applet-server/internal/data"
 	jwtUtil "applet-server/internal/pkg/jwt"
+	"applet-server/internal/pkg/log"
 	"applet-server/internal/vad"
 	"context"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
@@ -27,12 +26,12 @@ type ChatWebsocketServer interface {
 	HandlerText(ctx context.Context, body string, session *data.Session) error
 }
 
-func RegisterChatWebsocketServer(s *http.Server, charService ChatWebsocketServer) {
+func RegisterChatWebsocketServer(s *http.Server, charService ChatWebsocketServer, logger *log.MyLogger) {
 	r := s.Route("/")
-	r.GET(OperationChatWS, ChatWebsocketHandler(charService))
+	r.GET(OperationChatWS, ChatWebsocketHandler(charService, logger))
 }
 
-func ChatWebsocketHandler(srv ChatWebsocketServer) func(ctx http.Context) error {
+func ChatWebsocketHandler(srv ChatWebsocketServer, logger *log.MyLogger) func(ctx http.Context) error {
 
 	return func(ctx http.Context) error {
 		var in applet.ChatWSReq
@@ -46,7 +45,7 @@ func ChatWebsocketHandler(srv ChatWebsocketServer) func(ctx http.Context) error 
 		http.SetOperation(ctx, OperationChatWS)
 		subProtocol := ctx.Header().Get("Sec-WebSocket-Protocol")
 		token := subProtocol
-		log.Debugf("token:%s", token)
+		logger.WithContext(ctx).Debugf("token:%s", token)
 		tokenInfo, err := jwtUtil.ParseToken(token, "")
 		if err != nil {
 			return err
@@ -57,14 +56,14 @@ func ChatWebsocketHandler(srv ChatWebsocketServer) func(ctx http.Context) error 
 			upgrade := NewWsUpgrade(subProtocol)
 			conn, err := upgrade.Upgrade(ctx.Response(), ctx.Request(), nil)
 			if err != nil {
-				fmt.Errorf("[websocket] fail to create ws, error: %v", err)
+				logger.WithContext(subCtx).Errorf("[websocket] fail to create ws, error: %v", err)
 				return nil, err
 			}
-			log.Infof("[websocket] connect from %s", conn.RemoteAddr().String())
+			logger.WithContext(subCtx).Infof("[websocket] connect from %s", conn.RemoteAddr().String())
 			defer conn.Close()
 			sessionId := uuid.New().String()
 			session := data.GenSession(in, tokenInfo.Username, sessionId, conn)
-			subCtx = context.WithValue(subCtx, "session_id", sessionId)
+			subCtx = context.WithValue(subCtx, "sessionId", sessionId)
 			ttsParam := &data.TTSParam{
 				Speaker: "DaXiaoFang",
 				Speed:   "3",
@@ -93,7 +92,7 @@ func ChatWebsocketHandler(srv ChatWebsocketServer) func(ctx http.Context) error 
 
 				defer func() {
 					connectTimer.Stop()
-					log.Debugf("[websocket] close conn; handle defer; sessionId: %s; err:%v", in.SessionId, err)
+					logger.WithContext(subCtx).Debugf("[websocket] close conn; handle defer; sessionId: %s; err:%v", err)
 				}()
 			}
 
@@ -111,12 +110,12 @@ func ChatWebsocketHandler(srv ChatWebsocketServer) func(ctx http.Context) error 
 				messageType, message, err := conn.ReadMessage()
 				if err != nil {
 					if websocket.IsUnexpectedCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-						log.Errorf("[websocket] read message error: %v", err)
+						logger.WithContext(subCtx).Errorf("[websocket] read message error: %v", err)
 					}
-					log.Errorf("[websocket] read message error: %v", err)
+					logger.WithContext(subCtx).Errorf("[websocket] read message error: %v", err)
 					return nil, err
 				}
-				log.Debugf("sessionId:%s;reset:%t", session.Id, connectTimer.Reset(awaitTime))
+				logger.WithContext(subCtx).Debugf("sessionId:%s;reset:%t", session.Id, connectTimer.Reset(awaitTime))
 
 				switch messageType {
 				case websocket.CloseMessage:
@@ -127,31 +126,30 @@ func ChatWebsocketHandler(srv ChatWebsocketServer) func(ctx http.Context) error 
 					}
 				case websocket.PingMessage:
 					if err := conn.WriteMessage(websocket.PongMessage, []byte("")); err != nil {
-						fmt.Errorf("[websocket] write pong message error: %v", err)
+						logger.WithContext(subCtx).Errorf("[websocket] write pong message error: %v", err)
 						return nil, err
 					}
-					log.Debug("[websocket] ping")
+					logger.WithContext(subCtx).Debug("[websocket] ping")
 					break
 				case websocket.PongMessage:
-					log.Debug("[websocket] pong")
+					logger.WithContext(subCtx).Debug("[websocket] pong")
 					break
 				case websocket.TextMessage:
 
 					var chatMsg applet.ChatClientMessage
-					//log.Debugf("message: %s", message)
-					// use to debug
 					if err := json.Unmarshal(message, &chatMsg); err != nil {
-						log.Errorf("message:%s, sessionId:%s; err:%v", message, in.SessionId, err)
+						logger.WithContext(subCtx).Errorf("message:%s, sessionId:%s; err:%v", message, sessionId, err)
 						if strings.HasPrefix(string(message), "text:") {
 							text := strings.Trim(string(message), "text:")
-							session.TraceId = chatMsg.TraceId
+							questionId := uuid.New().String()
+							ctx := context.WithValue(ctx, "questionId", questionId)
 							if err := srv.HandlerText(ctx, text, session); err != nil {
 								return nil, err
 							}
 						}
 						break
 					}
-					log.Debugf("chatMsg:%v", chatMsg)
+					logger.WithContext(subCtx).Debugf("chatMsg:%v", chatMsg)
 					if chatMsg.MessageType == applet.MessageType_chat_text {
 
 						ctxText := context.Background()
@@ -162,9 +160,9 @@ func ChatWebsocketHandler(srv ChatWebsocketServer) func(ctx http.Context) error 
 						if vadInputCh != nil {
 							voice, err := base64.StdEncoding.DecodeString(chatMsg.Content)
 							if err != nil {
-								log.Errorf("[websocket] decode voice error: %v\n", err)
+								logger.WithContext(subCtx).Errorf("[websocket] decode voice error: %v\n", err)
 							} else {
-								log.Debugf("[websocket] traceId:%s;voice length: %d\n", chatMsg.TraceId, len(voice))
+								logger.WithContext(subCtx).Debugf("[websocket] voice length: %d\n", len(voice))
 								if len(voice) > 0 {
 									vadInputCh <- voice
 								}
@@ -178,18 +176,17 @@ func ChatWebsocketHandler(srv ChatWebsocketServer) func(ctx http.Context) error 
 						if vadDateInfo.LastCancel != nil {
 							vadDateInfo.LastCancel()
 						}
-						session.TraceId = chatMsg.TraceId
-						log.Debugf("[websocket] interruption;sessionId:%s, traceId:%s, err:%v", in.SessionId, chatMsg.TraceId, err)
+						logger.WithContext(subCtx).Debugf("[websocket] interruption; err:%v", err)
 					}
 
 					if chatMsg.MessageType == applet.MessageType_chat_parameter {
 						var parameter applet.ChatParameter
 						if err := json.Unmarshal([]byte(chatMsg.Content), &parameter); err != nil {
-							log.Errorf("[websocket] unmarshal parameter error: %v\n", err)
+							logger.WithContext(subCtx).Errorf("[websocket] unmarshal parameter error: %v\n", err)
 							session.SendingMsgToClient(applet.ServiceType_Service_VAD, "", true, err.Error())
 						} else {
 
-							log.Debugf("[websocket] parameter;sessionId:%s, traceId:%s, parameter:%v", in.SessionId, chatMsg.TraceId, parameter)
+							logger.WithContext(subCtx).Debugf("[websocket] parameter; parameter:%v", parameter)
 							ttsParamNew := session.TtsParam.Load().(*data.TTSParam)
 							if parameter.Pitch != "" {
 								ttsParamNew.Pitch = parameter.Pitch

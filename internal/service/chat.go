@@ -36,22 +36,22 @@ func (c *ChatService) HandlerVoice(ctx context.Context, vadOutChan chan []byte, 
 
 	defer func() {
 		if err := recover(); err != nil {
-			c.Errorf("HandlerVoice; err:%v", err)
+			c.WithContext(ctx).Errorf("HandlerVoice; err:%v", err)
 		}
 		cancel()
-		c.Debugf("traceId:%s; end to  handler Voice; session:%v", session.TraceId, session)
+		c.WithContext(ctx).Debugf("end to  handler Voice; session:%v")
 	}()
-	c.Debugf("traceId:%s; start to  handler Voice; session:%v", session.TraceId, session)
+	c.WithContext(ctx).Debugf("start to  handler Voice; session:%v", session)
 
 	asrOutChan := make(chan string, 10)
 	if err := c.AsRControllerClient.StreamingRecognize(ctx, session, vadOutChan, asrOutChan); err != nil {
 		return err
 	}
 	asrResult := ""
-	c.Debugf("traceId:%s; await to asrResult ", session.TraceId)
+	c.WithContext(ctx).Debug("await to asrResult ")
 	for asrText := range asrOutChan {
 		asrResult = asrText
-		c.Debugf("traceId:%s, asrResult:%s", session.TraceId, asrResult)
+		c.WithContext(ctx).Debugf("asrResult:%s", asrResult)
 		if asrResult != "" {
 			session.SendingMsgToClient(applet.ServiceType_Service_ASR, asrText, false, "")
 		}
@@ -66,13 +66,13 @@ func (c *ChatService) HandlerVoice(ctx context.Context, vadOutChan chan []byte, 
 	var wg sync.WaitGroup
 
 	for resp := range talkRespCh {
-		c.Debugf("traceId:%s, resp:%v", session.TraceId, resp)
+		c.WithContext(ctx).Debugf("resp:%v", resp)
 		if err := session.SendingMsgToClient(applet.ServiceType_Service_Nlp, resp, false, ""); err != nil {
 			return err
 		}
 		for _, answer := range resp.AnsItem {
 			ttsText := strings.Replace(strings.TrimSpace(answer.Text), "\n", "", -1)
-			c.Debugf("sessionId:%s, ttsText:%s; start to call tts v2", session.TraceId, ttsText)
+			c.WithContext(ctx).Debugf("ttsText:%s; start to call tts v2", ttsText)
 			if ttsText == "" {
 				continue
 			}
@@ -85,12 +85,12 @@ func (c *ChatService) HandlerVoice(ctx context.Context, vadOutChan chan []byte, 
 	if err := session.SendingMsgToClient(applet.ServiceType_Service_Nlp, "", true, ""); err != nil {
 		return err
 	}
-	c.Debugf("sessionId:%s, the sentence finished", session.Id)
+	c.WithContext(ctx).Debugf("the sentence finished")
 	return nil
 }
 func (c *ChatService) HandlerText(ctx context.Context, body string, session *data.Session) error {
 
-	c.Infof("text:%s", body)
+	c.WithContext(ctx).Infof("text:%s", body)
 	if session == nil {
 		return errors.New("session is nil")
 	}
@@ -113,7 +113,7 @@ func (c *ChatService) HandlerText(ctx context.Context, body string, session *dat
 			}
 			for _, answer := range resp.AnsItem {
 				ttsText := strings.Replace(strings.TrimSpace(answer.Text), "\n", "", -1)
-				log.Debugf("sessionId:%s, ttsText:%s; start to call tts v2", session.TraceId, ttsText)
+				c.WithContext(ctx).Debugf("ttsText:%s; start to call tts v2", ttsText)
 				if ttsText == "" {
 					continue
 				}
@@ -127,25 +127,25 @@ func (c *ChatService) HandlerText(ctx context.Context, body string, session *dat
 		return err
 	}
 
-	c.Debugf("HandlerText finished;")
+	c.WithContext(ctx).Debugf("HandlerText finished;")
 	return nil
 }
 
 func (c *ChatService) HandlerTTSToClient(ctx context.Context, ttsText, language string, session *data.Session, wg *sync.WaitGroup) {
 	defer func() {
-		c.Infof("sessionId:%s,ttsText:%s, tts finished", session.TraceId, ttsText)
+		c.WithContext(ctx).Infof("ttsText:%s, tts finished", ttsText)
 		wg.Done()
 	}()
 	ttsParam := session.TtsParam.Load().(*data.TTSParam)
-	log.Debugf("start to call tts; sessionId:%s, ttsText:%s, ttsParam:%+v", session.TraceId, ttsText, ttsParam)
-	ttsChan, err := c.CallTTSV2(ctx, session.Username, ttsParam, ttsText, language, session.Id, session.TraceId)
+	log.Debugf("start to call tts; sessionId:%s, ttsText:%s, ttsParam:%+v", ttsText, ttsParam)
+	ttsChan, err := c.CallTTSV2(ctx, session, ttsParam, ttsText, language)
 	if err != nil {
-		c.Errorf("sessionId:%s,ttsText:%s, call tts error:%v", session.TraceId, ttsText, err)
+		c.WithContext(ctx).Errorf("ttsText:%s, call tts error:%v", ttsText, err)
 		return
 	}
 	for ttsResp := range ttsChan {
 		if err := session.SendingMsgToClient(applet.ServiceType_Service_TTS, base64.RawStdEncoding.EncodeToString(ttsResp), false, ""); err != nil {
-			c.Errorf("sessionId:%s,ttsText:%s, send tts error:%v", session.TraceId, ttsText, err)
+			c.Errorf("ttsText:%s, send tts error:%v", ttsText, err)
 		}
 	}
 }

@@ -16,7 +16,8 @@ import (
 
 // NewHTTPServer new an HTTP server.
 func NewHTTPServer(c *conf.Server, middlewares http.ServerOption, vdSer *service.VoiceDataOperationService, account *service.AccountService,
-	speakerService *service.CloneSpeakerService, ttsService *service.TTSServiceService, chat *service.ChatService, feedbackService *service.FeedbackService) *http.Server {
+	speakerService *service.CloneSpeakerService, ttsService *service.TTSServiceService, chat *service.ChatService, feedbackService *service.FeedbackService,
+	logger *log.MyLogger) *http.Server {
 	var opts = []http.ServerOption{
 		middlewares,
 	}
@@ -42,7 +43,7 @@ func NewHTTPServer(c *conf.Server, middlewares http.ServerOption, vdSer *service
 	applet.RegisterTTSServiceHTTPServer(srv, ttsService)
 	applet.RegisterFeedbackHTTPServer(srv, feedbackService)
 	RegisterFormDataHandler(srv, vdSer)
-	RegisterChatWebsocketServer(srv, chat)
+	RegisterChatWebsocketServer(srv, chat, logger)
 	return srv
 }
 

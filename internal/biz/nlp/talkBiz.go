@@ -42,18 +42,19 @@ func (c *TalkClient) StreamingTalk(ctx context.Context, session *data.Session, q
 	if err != nil {
 		return
 	}
-	go TalkReceive(ctx, streamingTalk, talkRespCh, session.TraceId)
+	questionId := ctx.Value("questionId").(string)
+	go TalkReceive(ctx, streamingTalk, talkRespCh, questionId)
 	question := ""
 
 	for q := range questionStream {
 		question = q
-		req := genTalkRequest(false, question, session)
+		req := genTalkRequest(false, question, questionId, session)
 		err = streamingTalk.Send(req)
 		if err != nil {
 			return
 		}
 	}
-	req := genTalkRequest(true, question, session)
+	req := genTalkRequest(true, question, questionId, session)
 	err = streamingTalk.Send(req)
 	if err != nil {
 		return
@@ -64,25 +65,26 @@ func (c *TalkClient) StreamingTalk(ctx context.Context, session *data.Session, q
 
 func (c *TalkClient) StreamingTalkByText(ctx context.Context, question string, session *data.Session, talkRespCh chan data.TalkResp) error {
 
+	questionId := ctx.Value("questionId").(string)
 	streamingTalkClient := pb.NewTalkClient(c.ClientConn)
 	streamingTalk, err := streamingTalkClient.StreamingTalk(ctx)
 	if err != nil {
 		return err
 	}
-	req := genTalkRequest(true, question, session)
+	req := genTalkRequest(true, question, questionId, session)
 	if err = streamingTalk.Send(req); err != nil {
 		return err
 	}
 	if err := streamingTalk.CloseSend(); err != nil {
 		return err
 	}
-	go TalkReceive(ctx, streamingTalk, talkRespCh, session.TraceId)
-	log.Debugf("sessionId:%s, text:%s; finish to call streamingTalk", session.TraceId, question)
+	go TalkReceive(ctx, streamingTalk, talkRespCh, questionId)
+	c.WithContext(ctx).Debugf(" text:%s; finish to call streamingTalk", question)
 	return nil
 }
 
-func genTalkRequest(isFull bool, question string, session *data.Session) *pb.TalkRequest {
-	questionId := session.TraceId
+func genTalkRequest(isFull bool, question, questionId string, session *data.Session) *pb.TalkRequest {
+
 	sessionId := session.Id
 	agentId := int64(session.AgentId)
 	robotId := strconv.Itoa(int(session.RobotId))

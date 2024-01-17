@@ -43,7 +43,6 @@ func NewData(s3 *s3.S3Service, rdb *redis.Client, db *gorm.DB, minioClient *mini
 type Session struct {
 	Id       string
 	Username string
-	TraceId  string
 	RobotId  int32
 	Position string
 	AgentId  int
@@ -114,5 +113,3 @@ type TTSParam struct {
 	Speaker  string
 	IsClone  bool
 }
-
-

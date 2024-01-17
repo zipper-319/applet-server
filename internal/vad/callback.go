@@ -25,7 +25,9 @@ func goVoiceStart(pUserData unsafe.Pointer) {
 	ctx, cancel := context.WithCancel(context.Background())
 	pDataInfo.LastCancel = cancel
 	session := pDataInfo.Session
-	session.TraceId = uuid.New().String()
+	questionId := uuid.New().String()
+	ctx = context.WithValue(ctx, "questionId", questionId)
+
 	go pDataInfo.Server.HandlerVoice(ctx, pDataInfo.OutputCh, session)
 	log.Infof("goOnStart:%d", pUserData)
 }
