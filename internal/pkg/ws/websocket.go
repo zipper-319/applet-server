@@ -3,6 +3,7 @@ package ws
 import (
 	"applet-server/api/v2/applet"
 	"applet-server/internal/pkg/log"
+	"context"
 	"github.com/gorilla/websocket"
 	"sync"
 )
@@ -10,27 +11,39 @@ import (
 type WsClient struct {
 	*websocket.Conn
 	sync.RWMutex
+	*log.MyLogger
 }
 
 type ChatServerMessage struct {
-	ServiceType applet.ServiceType ` json:"service_type,omitempty"`
-	Content     interface{}        ` json:"content,omitempty"`
-	IsEnd       bool               `son:"is_end,omitempty"`
-	IsSuccess   bool               `json:"is_success,omitempty"`
-	ErrMsg      string             `json:"err_msg,omitempty"`
+	ServiceType applet.ServiceType `json:"service_type"`
+	QuestionId  string             ` json:"question_id"`
+	SessionId   string             ` json:"session_id"`
+	Content     interface{}        ` json:"content"`
+	IsEnd       bool               `json:"is_end"`
+	IsSuccess   bool               `json:"is_success"`
+	ErrMsg      string             `json:"err_msg"`
 }
 
-func NewWsClient(conn *websocket.Conn) *WsClient {
-	return &WsClient{Conn: conn}
+func NewWsClient(conn *websocket.Conn, logger *log.MyLogger) *WsClient {
+	return &WsClient{
+		Conn:     conn,
+		MyLogger: logger,
+	}
 }
 
-func (c *WsClient) SendingMsgToClient(msgType applet.ServiceType, content interface{}, isEnd bool, errMsg string) error {
-	log.Debugf("sending message to Client;msgType %s ", msgType)
+func (c *WsClient) SendingMsgToClient(ctx context.Context, msgType applet.ServiceType, content interface{}, isEnd bool, errMsg string) error {
+
+	c.WithContext(ctx).Debugf("sending message to Client;msgType %s ", msgType)
+	questionId := ctx.Value("questionId").(string)
+	sessionId := ctx.Value("sessionId").(string)
 	c.Lock()
 	defer c.Unlock()
 	if errMsg != "" {
 		return c.WriteJSON(ChatServerMessage{
 			ServiceType: msgType,
+			QuestionId:  questionId,
+			SessionId:   sessionId,
+			Content:     nil,
 			IsEnd:       true,
 			IsSuccess:   false,
 			ErrMsg:      errMsg,

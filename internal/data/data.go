@@ -7,6 +7,7 @@ import (
 	"applet-server/internal/data/mysql"
 	"applet-server/internal/data/s3"
 	"applet-server/internal/data/train"
+	"applet-server/internal/pkg/log"
 	"applet-server/internal/pkg/ws"
 	"github.com/gorilla/websocket"
 	"github.com/redis/go-redis/v9"
@@ -93,7 +94,7 @@ type FileObject struct {
 //	return &Session{TraceId: id, RobotId: robotId, Position: position, AgentId: agentId, Language: language}
 //}
 
-func GenSession(req applet.ChatWSReq, username, sessionId string, conn *websocket.Conn) *Session {
+func GenSession(req applet.ChatWSReq, username, sessionId string, conn *websocket.Conn, logger *log.MyLogger) *Session {
 	return &Session{
 		Id:         sessionId,
 		Username:   username,
@@ -101,7 +102,7 @@ func GenSession(req applet.ChatWSReq, username, sessionId string, conn *websocke
 		AgentId:    int(req.AgentId),
 		Language:   atomic.NewString(req.Language),
 		MethodType: req.Method,
-		WsClient:   ws.NewWsClient(conn),
+		WsClient:   ws.NewWsClient(conn, logger),
 	}
 }
 

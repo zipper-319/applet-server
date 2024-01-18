@@ -62,7 +62,7 @@ func ChatWebsocketHandler(srv ChatWebsocketServer, logger *log.MyLogger) func(ct
 			logger.WithContext(subCtx).Infof("[websocket] connect from %s", conn.RemoteAddr().String())
 			defer conn.Close()
 			sessionId := uuid.New().String()
-			session := data.GenSession(in, tokenInfo.Username, sessionId, conn)
+			session := data.GenSession(in, tokenInfo.Username, sessionId, conn, logger)
 			subCtx = context.WithValue(subCtx, "sessionId", sessionId)
 			ttsParam := &data.TTSParam{
 				Speaker: "DaXiaoFang",
@@ -95,15 +95,6 @@ func ChatWebsocketHandler(srv ChatWebsocketServer, logger *log.MyLogger) func(ct
 					logger.WithContext(subCtx).Debugf("[websocket] close conn; handle defer; sessionId: %s; err:%v", err)
 				}()
 			}
-
-			//go func() {
-			//	select {
-			//	case <-connectTimer.C:
-			//		// 触发超时机制，
-			//		log.Infof("[websocket] vad timeout, close conn;sessionId: %s", in.SessionId)
-			//		conn.Close()
-			//	}
-			//}()
 
 			for {
 
@@ -183,7 +174,7 @@ func ChatWebsocketHandler(srv ChatWebsocketServer, logger *log.MyLogger) func(ct
 						var parameter applet.ChatParameter
 						if err := json.Unmarshal([]byte(chatMsg.Content), &parameter); err != nil {
 							logger.WithContext(subCtx).Errorf("[websocket] unmarshal parameter error: %v\n", err)
-							session.SendingMsgToClient(applet.ServiceType_Service_VAD, "", true, err.Error())
+							session.SendingMsgToClient(ctx, applet.ServiceType_Service_VAD, "", true, err.Error())
 						} else {
 
 							logger.WithContext(subCtx).Debugf("[websocket] parameter; parameter:%v", parameter)

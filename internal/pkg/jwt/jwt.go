@@ -133,7 +133,7 @@ func Server(logger *log.MyLogger, jwtKey string, expire time.Duration, opts ...O
 					}
 					if claims, ok := tokenInfo.Claims.(*IdentityClaims); ok {
 						ctx = context.WithValue(ctx, Identifier{}, claims)
-						logger.Infof("tokenInfo.Claims is *IdentityClaims")
+						logger.Infof("tokenInfo.Claims is %#v", claims)
 					} else {
 						logger.Error("tokenInfo.Claims is not *IdentityClaims")
 					}
@@ -209,7 +209,7 @@ func ParseToken(token, key string) (*IdentityClaims, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Debug(identifier.Username)
+
 	if claims, ok := tokenInfo.Claims.(*IdentityClaims); ok {
 		log.Debug("tokenInfo  userName:", claims.Username)
 		return claims, nil

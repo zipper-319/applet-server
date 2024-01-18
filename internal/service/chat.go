@@ -53,10 +53,10 @@ func (c *ChatService) HandlerVoice(ctx context.Context, vadOutChan chan []byte, 
 		asrResult = asrText
 		c.WithContext(ctx).Debugf("asrResult:%s", asrResult)
 		if asrResult != "" {
-			session.SendingMsgToClient(applet.ServiceType_Service_ASR, asrText, false, "")
+			session.SendingMsgToClient(ctx, applet.ServiceType_Service_ASR, asrText, false, "")
 		}
 	}
-	session.SendingMsgToClient(applet.ServiceType_Service_ASR, asrResult, true, "")
+	session.SendingMsgToClient(ctx, applet.ServiceType_Service_ASR, asrResult, true, "")
 
 	talkRespCh := make(chan data.TalkResp, 10)
 	if err := c.TalkClient.StreamingTalkByText(ctx, asrResult, session, talkRespCh); err != nil {
@@ -67,7 +67,7 @@ func (c *ChatService) HandlerVoice(ctx context.Context, vadOutChan chan []byte, 
 
 	for resp := range talkRespCh {
 		c.WithContext(ctx).Debugf("resp:%v", resp)
-		if err := session.SendingMsgToClient(applet.ServiceType_Service_Nlp, resp, false, ""); err != nil {
+		if err := session.SendingMsgToClient(ctx, applet.ServiceType_Service_Nlp, resp, false, ""); err != nil {
 			return err
 		}
 		for _, answer := range resp.AnsItem {
@@ -82,7 +82,7 @@ func (c *ChatService) HandlerVoice(ctx context.Context, vadOutChan chan []byte, 
 		}
 	}
 	wg.Wait()
-	if err := session.SendingMsgToClient(applet.ServiceType_Service_Nlp, "", true, ""); err != nil {
+	if err := session.SendingMsgToClient(ctx, applet.ServiceType_Service_Nlp, "", true, ""); err != nil {
 		return err
 	}
 	c.WithContext(ctx).Debugf("the sentence finished")
@@ -108,7 +108,7 @@ func (c *ChatService) HandlerText(ctx context.Context, body string, session *dat
 
 		for resp := range talkRespCh {
 
-			if err := session.SendingMsgToClient(applet.ServiceType_Service_Nlp, resp, false, ""); err != nil {
+			if err := session.SendingMsgToClient(ctx, applet.ServiceType_Service_Nlp, resp, false, ""); err != nil {
 				return err
 			}
 			for _, answer := range resp.AnsItem {
@@ -123,7 +123,7 @@ func (c *ChatService) HandlerText(ctx context.Context, body string, session *dat
 		}
 	}
 	wg.Wait()
-	if err := session.SendingMsgToClient(applet.ServiceType_Service_Nlp, "", true, ""); err != nil {
+	if err := session.SendingMsgToClient(ctx, applet.ServiceType_Service_Nlp, "", true, ""); err != nil {
 		return err
 	}
 
@@ -144,7 +144,7 @@ func (c *ChatService) HandlerTTSToClient(ctx context.Context, ttsText, language 
 		return
 	}
 	for ttsResp := range ttsChan {
-		if err := session.SendingMsgToClient(applet.ServiceType_Service_TTS, base64.RawStdEncoding.EncodeToString(ttsResp), false, ""); err != nil {
+		if err := session.SendingMsgToClient(ctx, applet.ServiceType_Service_TTS, base64.RawStdEncoding.EncodeToString(ttsResp), false, ""); err != nil {
 			c.Errorf("ttsText:%s, send tts error:%v", ttsText, err)
 		}
 	}
