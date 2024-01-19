@@ -11,6 +11,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"runtime/debug"
 	"strings"
 	"sync"
 )
@@ -32,16 +33,18 @@ func NewChatService(ttsClient *tts.TTSClient, asrClient *asr.AsRControllerClient
 }
 
 func (c *ChatService) HandlerVoice(ctx context.Context, vadOutChan chan []byte, session *data.Session) error {
+
 	ctx, cancel := context.WithCancel(ctx)
 
 	defer func() {
 		if err := recover(); err != nil {
 			c.WithContext(ctx).Errorf("HandlerVoice; err:%v", err)
+			fmt.Println(string(debug.Stack()))
 		}
 		cancel()
-		c.WithContext(ctx).Debugf("end to  handler Voice; session:%v")
+		c.WithContext(ctx).Debug("-------------end to  handler Voice----------------")
 	}()
-	c.WithContext(ctx).Debugf("start to  handler Voice; session:%v", session)
+	c.WithContext(ctx).Debug("--------------start to  handler Voice-----------")
 
 	asrOutChan := make(chan string, 10)
 	if err := c.AsRControllerClient.StreamingRecognize(ctx, session, vadOutChan, asrOutChan); err != nil {
@@ -89,7 +92,12 @@ func (c *ChatService) HandlerVoice(ctx context.Context, vadOutChan chan []byte, 
 	return nil
 }
 func (c *ChatService) HandlerText(ctx context.Context, body string, session *data.Session) error {
-
+	defer func() {
+		if err := recover(); err != nil {
+			log.Error(err)
+			fmt.Println(string(debug.Stack()))
+		}
+	}()
 	c.WithContext(ctx).Infof("text:%s", body)
 	if session == nil {
 		return errors.New("session is nil")
