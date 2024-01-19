@@ -1,7 +1,7 @@
 #!/bin/bash
 
 AppName="smartvoice-platform"
-IMAGE_NAME="applet-service"
+IMAGE_NAME="applet-server"
 
 user="annotation"
 password="7GXZUsYFYP.Jrq"
