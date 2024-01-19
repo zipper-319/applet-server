@@ -79,7 +79,6 @@ func NewLogger(confLog *conf.Log) *MyLogger {
 		NameKey:       "log",
 		CallerKey:     "line",
 		StacktraceKey: "stacktrace",
-
 		LineEnding:     zapcore.DefaultLineEnding,
 		EncodeLevel:    zapcore.LowercaseLevelEncoder,  // 小写编码器
 		EncodeTime:     zapcore.ISO8601TimeEncoder,     // ISO8601 UTC 时间格式
@@ -129,17 +128,18 @@ func NewLogger(confLog *conf.Log) *MyLogger {
 }
 
 func (l *MyLogger) WithContext(ctx context.Context) *MyLogger {
-	questionId := ctx.Value("question_id")
+	questionId := ctx.Value("questionId")
 	logger := l.logger
 	if value, ok := questionId.(string); ok && value != "" {
 		logger = logger.With(zap.String("questionId", value))
 	}
-	sessionId := ctx.Value("session_id")
+	sessionId := ctx.Value("sessionId")
 	if value, ok := sessionId.(string); ok && value != "" {
-		logger = logger.With(zap.String("session_id", value))
+		logger = logger.With(zap.String("sessionId", value))
 	}
 	return &MyLogger{
-		logger: logger,
+		logger:     logger,
+		messageKey: l.messageKey,
 	}
 }
 
