@@ -3,6 +3,7 @@ package server
 import (
 	"applet-server/api/v2/applet"
 	"applet-server/internal/data"
+	jwtUtil "applet-server/internal/pkg/jwt"
 	"context"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/transport/http"
@@ -34,7 +35,13 @@ func FormDataMind(srv HandlerFormData) func(ctx http.Context) error {
 		if err := req.ParseMultipartForm(defaultMaxMemory); err != nil {
 			log.Error(err)
 		}
-		log.Info(req.Form)
+		token := req.Header.Get(jwtUtil.AuthorizationKey)
+		log.Debug(req.Form, token)
+		tokenInfo, err := jwtUtil.ParseToken(token, "")
+		if err != nil {
+			return jwtUtil.ErrTokenInvalid
+		}
+		log.Debug("tokenInfo", tokenInfo)
 		if err := ctx.BindForm(&in); err != nil {
 			return err
 		}
@@ -48,6 +55,7 @@ func FormDataMind(srv HandlerFormData) func(ctx http.Context) error {
 		out, err := srv.HandlerFormData(ctx, &data.FileObject{
 			File:     file,
 			FileName: fileName,
+			Username: tokenInfo.Username,
 		}, &in)
 		if err != nil {
 			return err

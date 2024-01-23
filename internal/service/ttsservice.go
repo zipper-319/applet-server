@@ -75,7 +75,11 @@ func (s *TTSServiceService) GetTTSConfig(ctx context.Context, req *emptypb.Empty
 			IsBelongClone:        speaker.IsBelongClone,
 		}
 		if speaker.IsBelongClone {
-			temp.SpeakerName = cloneSpeakerMap[temp.ParameterSpeakerName]
+			if speakerName, exist := cloneSpeakerMap[temp.ParameterSpeakerName]; exist {
+				temp.ParameterSpeakerName = speakerName
+			} else {
+				continue
+			}
 		}
 		speakerList = append(speakerList, temp)
 	}

@@ -87,6 +87,7 @@ type Answer struct {
 type FileObject struct {
 	File     io.Reader
 	FileName string
+	Username string
 }
 
 //func NewSession(robotId int32, position string, agentId int, language string) *Session {

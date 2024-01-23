@@ -28,7 +28,7 @@ var NotVerify = []string{
 const (
 
 	// authorizationKey holds the key used to store the JWT Token in the request tokenHeader.
-	authorizationKey string = "Authorization"
+	AuthorizationKey string = "Authorization"
 
 	// reason holds the error reason.
 	reason string = "UNAUTHORIZED"
@@ -93,7 +93,7 @@ func Server(logger *log.MyLogger, jwtKey string, expire time.Duration, opts ...O
 					}
 				}
 				if !isNotVerify {
-					jwtToken := header.RequestHeader().Get(authorizationKey)
+					jwtToken := header.RequestHeader().Get(AuthorizationKey)
 					logger.Infof("jwtToken:%s", jwtToken)
 					if jwtToken == "" {
 						return nil, ErrMissingJwtToken
