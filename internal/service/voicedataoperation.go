@@ -134,12 +134,22 @@ func (s *VoiceDataOperationService) GetText(ctx context.Context, req *pb.GetText
 
 func (s *VoiceDataOperationService) HandlerFormData(ctx context.Context, file *data.FileObject, req *pb.UploadFilesRequest) (*emptypb.Empty, error) {
 	s.Info(req)
-	//f, err := os.OpenFile(req.Speaker, os.O_WRONLY|os.O_CREATE, 0o666)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//defer f.Close()
+	tokenInfo, ok := jwtUtil.GetTokenInfo(ctx)
+	if !ok {
+		return nil, jwtUtil.ErrTokenInvalid
+	}
+	s.Infof("tokenInfo: %+v", tokenInfo)
+	username := tokenInfo.Username
+
 	uploadMinio(file.File, file.FileName)
+	speakerParam, err := s.uc.UploadFiles(ctx, file.File, username, file.FileName)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := s.speaker.CreateSpeaker(ctx, username, req.Speaker, speakerParam); err != nil {
+		return nil, err
+	}
 	return &emptypb.Empty{}, nil
 }
 

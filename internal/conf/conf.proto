@@ -101,6 +101,7 @@ message Minio {
 
 message Train {
   string addr = 1;
+  string notify_addr = 2;
 }
 
 message Log {

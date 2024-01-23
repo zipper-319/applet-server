@@ -44,6 +44,7 @@ data:
     timeout: 30
   train:
     addr: http://172.16.23.85:30221
+    notify_addr: http://172.16.23.86:30540
 
   minio:
     addr: 10.12.32.96:9100

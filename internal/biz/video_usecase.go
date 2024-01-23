@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"github.com/redis/go-redis/v9"
+	"io"
 )
 
 type VideoUseCase struct {
@@ -67,6 +68,20 @@ func (u *VideoUseCase) Upload(ctx context.Context, voiceData []byte, sequence in
 		u.RedisClient.HSet(ctx, key, "sequence", sequence+1)
 	}
 	return nil
+}
+
+func (u *VideoUseCase) UploadFiles(ctx context.Context, videoFiles io.Reader, username, fileName string) (string, error) {
+	count, err := mysql.NewCloneSpeakerModel(u.DB).GetUserSpeakerCount(ctx, username)
+	if err != nil {
+		return "", err
+	}
+	speakerParam := fmt.Sprintf("%s%s%d", username, "compress", count+1)
+	u.Debugf("fileName:%s, speakerParam:%s", fileName, speakerParam)
+	if err := u.Train.SaveVideo(videoFiles, username, speakerParam, fileName, applet.Flag_end); err != nil {
+		return "", err
+	}
+
+	return speakerParam, nil
 }
 
 func (u *VideoUseCase) Download(ctx context.Context, sequence int, username string, speakerSerial int) ([]byte, error) {

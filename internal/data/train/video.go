@@ -15,17 +15,17 @@ import (
 	"time"
 )
 
-const url = "http://172.16.23.85:30221"
-
 type Train struct {
 	Addr string
 	*log.MyLogger
+	NotifyAddr string
 }
 
 func NewTrain(config *conf.Data, logger *log.MyLogger) *Train {
 	return &Train{
-		Addr:     config.Train.Addr,
-		MyLogger: logger,
+		Addr:       config.Train.Addr,
+		MyLogger:   logger,
+		NotifyAddr: config.Train.NotifyAddr,
 	}
 }
 
@@ -92,7 +92,7 @@ func (t *Train) GetTrainStatus(tenantCode string, speakerId string) error {
 	path := "/voice/getTrainStatus"
 
 	resp, err := goz.Get(fmt.Sprintf("%s%s", t.Addr, path), goz.Options{
-		Query: fmt.Sprintf("tenant_code=%s&speaker_id=%s", tenantCode, speakerId),
+		Query: fmt.Sprintf("tenant_code=%s&speaker_id=%s&notify_url=%s", tenantCode, speakerId, t.NotifyAddr),
 	})
 	if err != nil {
 		return err
