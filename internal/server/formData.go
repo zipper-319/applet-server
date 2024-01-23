@@ -35,7 +35,8 @@ func FormDataMind(srv HandlerFormData) func(ctx http.Context) error {
 		if err := req.ParseMultipartForm(defaultMaxMemory); err != nil {
 			log.Error(err)
 		}
-		token := req.Header.Get(jwtUtil.AuthorizationKey)
+		log.Debug(ctx.Header())
+		token := ctx.Header().Get(jwtUtil.AuthorizationKey)
 		log.Debug(req.Form, token)
 		tokenInfo, err := jwtUtil.ParseToken(token, "")
 		if err != nil {
