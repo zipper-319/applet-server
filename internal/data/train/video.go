@@ -51,6 +51,7 @@ func (t *Train) SaveVideo(videoContent io.Reader, tenantCode string, speakerId s
 
 	writer.WriteField("tenant_code", tenantCode)
 	writer.WriteField("speaker_id", speakerId)
+	writer.WriteField("notify_url", t.NotifyAddr)
 
 	if flag == applet.Flag_start {
 		writer.WriteField("flag", "start")
@@ -92,7 +93,7 @@ func (t *Train) GetTrainStatus(tenantCode string, speakerId string) error {
 	path := "/voice/getTrainStatus"
 
 	resp, err := goz.Get(fmt.Sprintf("%s%s", t.Addr, path), goz.Options{
-		Query: fmt.Sprintf("tenant_code=%s&speaker_id=%s&notify_url=%s", tenantCode, speakerId, t.NotifyAddr),
+		Query: fmt.Sprintf("tenant_code=%s&speaker_id=%s", tenantCode, speakerId),
 	})
 	if err != nil {
 		return err

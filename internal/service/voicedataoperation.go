@@ -141,7 +141,7 @@ func (s *VoiceDataOperationService) HandlerFormData(ctx context.Context, file *d
 	s.Infof("tokenInfo: %+v", tokenInfo)
 	username := tokenInfo.Username
 
-	uploadMinio(file.File, file.FileName)
+	//uploadMinio(file.File, file.FileName)
 	speakerParam, err := s.uc.UploadFiles(ctx, file.File, username, file.FileName)
 	if err != nil {
 		return nil, err
