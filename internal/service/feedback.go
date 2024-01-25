@@ -2,12 +2,13 @@ package service
 
 import (
 	"applet-server/internal/conf"
+	jwtUtil "applet-server/internal/pkg/jwt"
+	"applet-server/internal/pkg/log"
 	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/go-kratos/kratos/v2/log"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"io"
 	"net/http"
@@ -18,6 +19,7 @@ import (
 type FeedbackService struct {
 	pb.UnimplementedFeedbackServer
 	addr string
+	*log.MyLogger
 }
 
 type CollectQAReq struct {
@@ -26,6 +28,7 @@ type CollectQAReq struct {
 	Question string `json:"question"`
 	Answer   string `json:"answer"`
 	Channel  string `json:"channel"`
+	Username string `json:"username"`
 }
 
 type CollectQAResp struct {
@@ -35,11 +38,17 @@ type CollectQAResp struct {
 	QaId    int  `json:"qaId"`
 }
 
-func NewFeedbackService(app *conf.App) *FeedbackService {
-	return &FeedbackService{addr: app.Feedback.Addr}
+func NewFeedbackService(app *conf.App, logger *log.MyLogger) *FeedbackService {
+	return &FeedbackService{addr: app.Feedback.Addr,  MyLogger: logger}
 }
 
 func (s *FeedbackService) Collect(ctx context.Context, req *pb.CollectReq) (*emptypb.Empty, error) {
+	tokenInfo, ok := jwtUtil.GetTokenInfo(ctx)
+	if !ok {
+		return nil, jwtUtil.ErrTokenInvalid
+	}
+	s.Infof("tokenInfo: %+v", tokenInfo)
+	username := tokenInfo.Username
 	if req.QaType == pb.QAType_CommonQA{
 		req.AgentId = 0
 	}
@@ -49,6 +58,7 @@ func (s *FeedbackService) Collect(ctx context.Context, req *pb.CollectReq) (*emp
 		Question: req.Question,
 		Answer:   req.Answer,
 		Channel:  "weixin",
+		Username: username,
 	}
 
 	qaReqStr, err := json.Marshal(qaReq)
