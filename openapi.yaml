@@ -63,7 +63,7 @@ paths:
                 "200":
                     description: OK
                     content: {}
-    /api/v2/feedback/collect_like:
+    /api/v2/feedback/collect_dislike:
         post:
             tags:
                 - Feedback
@@ -73,6 +73,21 @@ paths:
                     application/json:
                         schema:
                             $ref: '#/components/schemas/applet.v2.CollectDislikeReq'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /api/v2/feedback/collect_like:
+        post:
+            tags:
+                - Feedback
+            operationId: Feedback_CollectLike
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/applet.v2.CollectLikeReq'
                 required: true
             responses:
                 "200":

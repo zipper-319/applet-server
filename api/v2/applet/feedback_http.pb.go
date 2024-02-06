@@ -34,7 +34,7 @@ func RegisterFeedbackHTTPServer(s *http.Server, srv FeedbackHTTPServer) {
 	r := s.Route("/")
 	r.POST("/api/v2/feedback/collect", _Feedback_Collect0_HTTP_Handler(srv))
 	r.POST("/api/v2/feedback/collect_like", _Feedback_CollectLike0_HTTP_Handler(srv))
-	r.POST("/api/v2/feedback/collect_like", _Feedback_CollectDislike0_HTTP_Handler(srv))
+	r.POST("/api/v2/feedback/collect_dislike", _Feedback_CollectDislike0_HTTP_Handler(srv))
 }
 
 func _Feedback_Collect0_HTTP_Handler(srv FeedbackHTTPServer) func(ctx http.Context) error {
@@ -132,7 +132,7 @@ func (c *FeedbackHTTPClientImpl) Collect(ctx context.Context, in *CollectReq, op
 
 func (c *FeedbackHTTPClientImpl) CollectDislike(ctx context.Context, in *CollectDislikeReq, opts ...http.CallOption) (*emptypb.Empty, error) {
 	var out emptypb.Empty
-	pattern := "/api/v2/feedback/collect_like"
+	pattern := "/api/v2/feedback/collect_dislike"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationFeedbackCollectDislike))
 	opts = append(opts, http.PathTemplate(pattern))
