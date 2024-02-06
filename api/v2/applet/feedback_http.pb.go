@@ -21,14 +21,20 @@ var _ = binding.EncodeURL
 const _ = http.SupportPackageIsVersion1
 
 const OperationFeedbackCollect = "/applet.v2.Feedback/Collect"
+const OperationFeedbackCollectDislike = "/applet.v2.Feedback/CollectDislike"
+const OperationFeedbackCollectLike = "/applet.v2.Feedback/CollectLike"
 
 type FeedbackHTTPServer interface {
 	Collect(context.Context, *CollectReq) (*emptypb.Empty, error)
+	CollectDislike(context.Context, *CollectDislikeReq) (*emptypb.Empty, error)
+	CollectLike(context.Context, *CollectLikeReq) (*emptypb.Empty, error)
 }
 
 func RegisterFeedbackHTTPServer(s *http.Server, srv FeedbackHTTPServer) {
 	r := s.Route("/")
 	r.POST("/api/v2/feedback/collect", _Feedback_Collect0_HTTP_Handler(srv))
+	r.POST("/api/v2/feedback/collect_like", _Feedback_CollectLike0_HTTP_Handler(srv))
+	r.POST("/api/v2/feedback/collect_like", _Feedback_CollectDislike0_HTTP_Handler(srv))
 }
 
 func _Feedback_Collect0_HTTP_Handler(srv FeedbackHTTPServer) func(ctx http.Context) error {
@@ -53,8 +59,54 @@ func _Feedback_Collect0_HTTP_Handler(srv FeedbackHTTPServer) func(ctx http.Conte
 	}
 }
 
+func _Feedback_CollectLike0_HTTP_Handler(srv FeedbackHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in CollectLikeReq
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationFeedbackCollectLike)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.CollectLike(ctx, req.(*CollectLikeReq))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*emptypb.Empty)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Feedback_CollectDislike0_HTTP_Handler(srv FeedbackHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in CollectDislikeReq
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationFeedbackCollectDislike)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.CollectDislike(ctx, req.(*CollectDislikeReq))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*emptypb.Empty)
+		return ctx.Result(200, reply)
+	}
+}
+
 type FeedbackHTTPClient interface {
 	Collect(ctx context.Context, req *CollectReq, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
+	CollectDislike(ctx context.Context, req *CollectDislikeReq, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
+	CollectLike(ctx context.Context, req *CollectLikeReq, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
 }
 
 type FeedbackHTTPClientImpl struct {
@@ -70,6 +122,32 @@ func (c *FeedbackHTTPClientImpl) Collect(ctx context.Context, in *CollectReq, op
 	pattern := "/api/v2/feedback/collect"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationFeedbackCollect))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, err
+}
+
+func (c *FeedbackHTTPClientImpl) CollectDislike(ctx context.Context, in *CollectDislikeReq, opts ...http.CallOption) (*emptypb.Empty, error) {
+	var out emptypb.Empty
+	pattern := "/api/v2/feedback/collect_like"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationFeedbackCollectDislike))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, err
+}
+
+func (c *FeedbackHTTPClientImpl) CollectLike(ctx context.Context, in *CollectLikeReq, opts ...http.CallOption) (*emptypb.Empty, error) {
+	var out emptypb.Empty
+	pattern := "/api/v2/feedback/collect_like"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationFeedbackCollectLike))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {

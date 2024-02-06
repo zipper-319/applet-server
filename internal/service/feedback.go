@@ -2,16 +2,16 @@ package service
 
 import (
 	"applet-server/internal/conf"
+	"applet-server/internal/pkg/http"
 	jwtUtil "applet-server/internal/pkg/jwt"
 	"applet-server/internal/pkg/log"
-	"bytes"
+	"time"
+
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"io"
-	"net/http"
 
 	pb "applet-server/api/v2/applet"
 )
@@ -23,7 +23,7 @@ type FeedbackService struct {
 }
 
 type CollectQAReq struct {
-	Agentid  int32  `json:"agentid"`
+	AgentId  int32  `json:"agentid"`
 	Lang     string `json:"lang"`
 	Question string `json:"question"`
 	Answer   string `json:"answer"`
@@ -34,12 +34,66 @@ type CollectQAReq struct {
 type CollectQAResp struct {
 	Code    int  `json:"code"`
 	Status  bool `json:"status"`
-	Agentid int  `json:"agentid"`
+	AgentId int  `json:"agentid"`
 	QaId    int  `json:"qaId"`
 }
 
+type CollectResp struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
+
+type CollectBugReq struct {
+	DislikeCommon DislikeCommon `json:"dislikecommon"`
+	Mark          string        `json:"mark"`
+}
+
+type CollectUseCaseReq struct {
+	LikeCommon   LikeCommon    `json:"likeCommon"`
+	Mark         string        `json:"mark"`
+	Source       string        `json:"source"`
+	Domain       string        `json:"domain"`
+	Intent       string        `json:"intentname"`
+	IntentParams []IntentParam `json:"intentparams"`
+	QGroupId     string        `json:"qgroupid"`
+}
+
+type IntentParam struct {
+	SlotType  string `json:"slottype"`
+	SlotValue string `json:"slotvalue"`
+	SlotName  string `json:"slotname"`
+}
+
+type DislikeCommon struct {
+	AgentId        int32  `json:"agentid"`
+	QuestionId     string `json:"questionid"`
+	Question       string
+	Answer         string
+	BugType        string `json:"bugtype"`
+	FeedbackTime   string `json:"feedbacktime"`
+	FeedbackPerson string `json:"feedbackperson"`
+	env            string
+	lang           string
+	SessionId      string `json:"sessionid"`
+	RobotType      string `json:"robottype"`
+}
+
+type LikeCommon struct {
+	AgentId        int32  `json:"agentid"`
+	QuestionId     string `json:"questionid"`
+	Question       string
+	Answer         string
+	BugType        string `json:"bugtype"`
+	FeedbackTime   string `json:"feedbacktime"`
+	FeedbackPerson string `json:"feedbackperson"`
+	env            string
+	lang           string
+	SessionId      string `json:"sessionid"`
+	RobotType      string `json:"robottype"`
+}
+
 func NewFeedbackService(app *conf.App, logger *log.MyLogger) *FeedbackService {
-	return &FeedbackService{addr: app.Feedback.Addr,  MyLogger: logger}
+	return &FeedbackService{addr: app.Feedback.Addr, MyLogger: logger}
 }
 
 func (s *FeedbackService) Collect(ctx context.Context, req *pb.CollectReq) (*emptypb.Empty, error) {
@@ -49,11 +103,11 @@ func (s *FeedbackService) Collect(ctx context.Context, req *pb.CollectReq) (*emp
 	}
 	s.Infof("tokenInfo: %+v", tokenInfo)
 	username := tokenInfo.Username
-	if req.QaType == pb.QAType_CommonQA{
+	if req.QaType == pb.QAType_CommonQA {
 		req.AgentId = 0
 	}
 	qaReq := &CollectQAReq{
-		Agentid:  req.AgentId,
+		AgentId:  req.AgentId,
 		Lang:     req.Language,
 		Question: req.Question,
 		Answer:   req.Answer,
@@ -65,20 +119,108 @@ func (s *FeedbackService) Collect(ctx context.Context, req *pb.CollectReq) (*emp
 	if err != nil {
 		return nil, err
 	}
-	resp, err := http.Post(fmt.Sprintf("http://%s%s", s.addr, "/v2/ux/docqa/markqa"), "application/json", bytes.NewReader(qaReqStr))
+	addr := fmt.Sprintf("http://%s%s", s.addr, "/v2/ux/docqa/markqa")
+	result, err := http.Post(addr, qaReqStr)
 	if err != nil {
 		return nil, err
 	}
-	result, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	log.Info(string(result))
+	s.Infof("result: %s", result)
 	var respData CollectQAResp
 	json.Unmarshal(result, &respData)
 	if respData.Code == 0 && respData.Status {
 		return &emptypb.Empty{}, nil
 	} else {
 		return &emptypb.Empty{}, errors.New("feedback failed")
+	}
+}
+
+func (s *FeedbackService) CollectLike(ctx context.Context, req *pb.CollectLikeReq) (*emptypb.Empty, error) {
+	tokenInfo, ok := jwtUtil.GetTokenInfo(ctx)
+	if !ok {
+		return nil, jwtUtil.ErrTokenInvalid
+	}
+
+	username := tokenInfo.Username
+	s.Infof("tokenInfo: %+v; username:%s", tokenInfo, username)
+	addr := fmt.Sprintf("http://%s%s", s.addr, "/v2/ux/docqa/like")
+	intentParams := make([]IntentParam, 0, len(req.Entities))
+	for _, entity := range req.Entities {
+		intentParams = append(intentParams, IntentParam{
+			SlotType:  entity.Type,
+			SlotValue: entity.Value,
+			SlotName:  entity.Name,
+		})
+	}
+	collectReq := &CollectUseCaseReq{
+		LikeCommon: LikeCommon{
+			AgentId:        req.AgentId,
+			QuestionId:     req.QuestionId,
+			Question:       req.Question,
+			Answer:         req.Answer,
+			FeedbackTime:   time.Now().Format(time.RFC3339),
+			FeedbackPerson: username,
+			env:            req.EnvType,
+			lang:           req.Language,
+			RobotType:      "weixin",
+		},
+		Mark:         "",
+		Source:       req.Source,
+		Domain:       req.Domain,
+		Intent:       req.Intent,
+		IntentParams: intentParams,
+		QGroupId:     "",
+	}
+	collectReqStr, _ := json.Marshal(collectReq)
+	result, err := http.Post(addr, collectReqStr)
+	if err != nil {
+		return nil, err
+	}
+	s.Infof("result: %s", result)
+	var resp CollectResp
+	json.Unmarshal(result, &resp)
+	if resp.Code == 0 {
+		return &emptypb.Empty{}, nil
+	} else {
+		return &emptypb.Empty{}, errors.New(resp.Message)
+	}
+
+}
+func (s *FeedbackService) CollectDislike(ctx context.Context, req *pb.CollectDislikeReq) (*emptypb.Empty, error) {
+	tokenInfo, ok := jwtUtil.GetTokenInfo(ctx)
+	if !ok {
+		return nil, jwtUtil.ErrTokenInvalid
+	}
+
+	username := tokenInfo.Username
+	s.Infof("tokenInfo: %+v; username:%s", tokenInfo, username)
+	addr := fmt.Sprintf("http://%s%s", s.addr, "/v2/ux/docqa/dislike")
+	collectReq := &CollectBugReq{
+		DislikeCommon: DislikeCommon{
+			AgentId:        req.AgentId,
+			QuestionId:     req.QuestionId,
+			Question:       req.Question,
+			Answer:         req.Answer,
+			BugType:        fmt.Sprintf("%s-%s", req.BugType.String(), req.GetBugDesc()),
+			FeedbackTime:   time.Now().Format(time.RFC3339),
+			FeedbackPerson: username,
+			env:            req.EnvType,
+			lang:           req.Language,
+			SessionId:      "",
+			RobotType:      "weixin",
+		},
+		Mark: fmt.Sprintf("%s-%s", req.Reality, req.Expectation),
+	}
+	collectReqStr, _ := json.Marshal(collectReq)
+	result, err := http.Post(addr, collectReqStr)
+	if err != nil {
+		return nil, err
+	}
+	s.Infof("result: %s", result)
+	var resp CollectResp
+	json.Unmarshal(result, &resp)
+	if resp.Code == 0 {
+		return &emptypb.Empty{}, nil
+	} else {
+		return &emptypb.Empty{}, errors.New(resp.Message)
 	}
 }

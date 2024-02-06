@@ -20,7 +20,9 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Feedback_Collect_FullMethodName = "/applet.v2.Feedback/Collect"
+	Feedback_Collect_FullMethodName        = "/applet.v2.Feedback/Collect"
+	Feedback_CollectLike_FullMethodName    = "/applet.v2.Feedback/CollectLike"
+	Feedback_CollectDislike_FullMethodName = "/applet.v2.Feedback/CollectDislike"
 )
 
 // FeedbackClient is the client API for Feedback service.
@@ -28,6 +30,8 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FeedbackClient interface {
 	Collect(ctx context.Context, in *CollectReq, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	CollectLike(ctx context.Context, in *CollectLikeReq, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	CollectDislike(ctx context.Context, in *CollectDislikeReq, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type feedbackClient struct {
@@ -47,11 +51,31 @@ func (c *feedbackClient) Collect(ctx context.Context, in *CollectReq, opts ...gr
 	return out, nil
 }
 
+func (c *feedbackClient) CollectLike(ctx context.Context, in *CollectLikeReq, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, Feedback_CollectLike_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *feedbackClient) CollectDislike(ctx context.Context, in *CollectDislikeReq, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, Feedback_CollectDislike_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // FeedbackServer is the server API for Feedback service.
 // All implementations must embed UnimplementedFeedbackServer
 // for forward compatibility
 type FeedbackServer interface {
 	Collect(context.Context, *CollectReq) (*emptypb.Empty, error)
+	CollectLike(context.Context, *CollectLikeReq) (*emptypb.Empty, error)
+	CollectDislike(context.Context, *CollectDislikeReq) (*emptypb.Empty, error)
 	mustEmbedUnimplementedFeedbackServer()
 }
 
@@ -61,6 +85,12 @@ type UnimplementedFeedbackServer struct {
 
 func (UnimplementedFeedbackServer) Collect(context.Context, *CollectReq) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Collect not implemented")
+}
+func (UnimplementedFeedbackServer) CollectLike(context.Context, *CollectLikeReq) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CollectLike not implemented")
+}
+func (UnimplementedFeedbackServer) CollectDislike(context.Context, *CollectDislikeReq) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CollectDislike not implemented")
 }
 func (UnimplementedFeedbackServer) mustEmbedUnimplementedFeedbackServer() {}
 
@@ -93,6 +123,42 @@ func _Feedback_Collect_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Feedback_CollectLike_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CollectLikeReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FeedbackServer).CollectLike(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Feedback_CollectLike_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FeedbackServer).CollectLike(ctx, req.(*CollectLikeReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Feedback_CollectDislike_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CollectDislikeReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FeedbackServer).CollectDislike(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Feedback_CollectDislike_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FeedbackServer).CollectDislike(ctx, req.(*CollectDislikeReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Feedback_ServiceDesc is the grpc.ServiceDesc for Feedback service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -103,6 +169,14 @@ var Feedback_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Collect",
 			Handler:    _Feedback_Collect_Handler,
+		},
+		{
+			MethodName: "CollectLike",
+			Handler:    _Feedback_CollectLike_Handler,
+		},
+		{
+			MethodName: "CollectDislike",
+			Handler:    _Feedback_CollectDislike_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

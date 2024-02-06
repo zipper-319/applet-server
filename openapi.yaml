@@ -63,6 +63,21 @@ paths:
                 "200":
                     description: OK
                     content: {}
+    /api/v2/feedback/collect_like:
+        post:
+            tags:
+                - Feedback
+            operationId: Feedback_CollectDislike
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/applet.v2.CollectDislikeReq'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
     /api/v2/login:
         get:
             tags:
@@ -240,6 +255,70 @@ components:
                 message:
                     type: string
                 Metadata:
+                    type: string
+        applet.v2.CollectDislikeReq:
+            type: object
+            properties:
+                questionId:
+                    type: string
+                envType:
+                    type: string
+                agentId:
+                    type: integer
+                    format: int32
+                language:
+                    type: string
+                question:
+                    type: string
+                answer:
+                    type: string
+                intent:
+                    type: string
+                expectation:
+                    type: string
+                reality:
+                    type: string
+                bugType:
+                    type: integer
+                    format: enum
+                bugDesc:
+                    type: string
+        applet.v2.CollectLikeReq:
+            type: object
+            properties:
+                agentId:
+                    type: integer
+                    format: int32
+                language:
+                    type: string
+                question:
+                    type: string
+                answer:
+                    type: string
+                intent:
+                    type: string
+                questionId:
+                    type: string
+                entities:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/applet.v2.CollectLikeReq_Entity'
+                source:
+                    type: string
+                domain:
+                    type: string
+                envType:
+                    type: string
+        applet.v2.CollectLikeReq_Entity:
+            type: object
+            properties:
+                name:
+                    type: string
+                value:
+                    type: string
+                type:
+                    type: string
+                beforeValue:
                     type: string
         applet.v2.CollectReq:
             type: object

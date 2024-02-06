@@ -17,6 +17,18 @@ service  Feedback {
       body: "*"
     };
   }
+  rpc CollectLike(CollectLikeReq) returns (google.protobuf.Empty){
+    option (google.api.http) = {
+      post: "/api/v2/feedback/collect_like"
+      body: "*"
+    };
+  }
+  rpc CollectDislike(CollectDislikeReq) returns (google.protobuf.Empty){
+    option (google.api.http) = {
+      post: "/api/v2/feedback/collect_like"
+      body: "*"
+    };
+  }
 }
 enum QAType {
   CommonQA =  0;
@@ -29,4 +41,44 @@ message  CollectReq {
   string question = 3;
   string answer = 4;
   QAType qa_type = 5;
+}
+
+message  CollectLikeReq {
+  int32  agent_id = 1;
+  string  language = 2;
+  string question = 3;
+  string answer = 4;
+  string intent = 5;
+  message Entity{
+    string name = 1;
+    string value = 2;
+    string type = 3;
+    string before_value = 4;
+  }
+  string question_id = 6;
+  repeated Entity entities = 7;
+  string source = 8;
+  string  domain = 9;
+  string env_type = 10;
+}
+
+enum BugType {
+  Other =  0;
+  ASR =  1;
+  TTS =  2;
+  NLP =  3;
+}
+
+message CollectDislikeReq {
+  string question_id = 1;
+  string env_type =  2;
+  int32  agent_id = 3;
+  string language = 4;
+  string question = 5;
+  string answer = 6;
+  string intent = 7;
+  string expectation = 8;
+  string reality = 9;
+  BugType bug_type = 10;
+  string  bug_desc = 11;
 }
