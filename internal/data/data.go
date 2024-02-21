@@ -41,11 +41,7 @@ type ServiceAddr struct {
 
 // NewData .
 func NewData(s3 *s3.S3Service, rdb *redis.Client, db *gorm.DB, minioClient *minio.Client, trainObject *train.Train) (*Data, error) {
-	f, err := os.OpenFile("./configs/env.json", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-	if err != nil {
-		panic(err)
-	}
-	envContent, err := io.ReadAll(f)
+	envContent, err := os.ReadFile("configs/env.json")
 	if err != nil {
 		panic(err)
 	}
