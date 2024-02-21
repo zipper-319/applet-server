@@ -143,7 +143,11 @@ func ChatWebsocketHandler(srv ChatWebsocketServer, logger *log.MyLogger) func(ct
 					logger.WithContext(subCtx).Debugf("MessageType:%s, content:%s", chatMsg.MessageType, chatMsg.Content)
 					if chatMsg.MessageType == applet.MessageType_chat_text {
 						subCtx = context.WithValue(subCtx, "questionId", uuid.New().String())
-						go srv.HandlerText(subCtx, chatMsg.Content, session)
+						go func() {
+							if err := srv.HandlerText(subCtx, chatMsg.Content, session); err != nil {
+								logger.WithContext(subCtx).Error(err)
+							}
+						}()
 					}
 					if chatMsg.MessageType == applet.MessageType_chat_voice {
 

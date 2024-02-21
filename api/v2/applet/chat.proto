@@ -20,8 +20,8 @@ message ChatWSReq {
   MethodType method = 1;
   string position = 2;
   string language = 3;
-  int32  agent_id = 4;
-  ENV_TYPE  env_type = 5;
+  int32  agent_id = 4 ;
+  EnvType  env_type = 5 [json_name = "env_type"];
 }
 
 message ChatWSResp {
@@ -128,7 +128,7 @@ enum  ChatStatus{
   sleep = 1;
 }
 
-enum ENV_TYPE {
+enum EnvType {
   prod_m8 = 0;
   fit_86 = 1;
   prod_251 = 2;

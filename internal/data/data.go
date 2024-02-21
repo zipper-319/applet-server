@@ -78,7 +78,7 @@ type Session struct {
 	RobotId  int32
 	Position string
 	AgentId  int
-	Env      applet.ENV_TYPE
+	Env      applet.EnvType
 	Language *atomic.String
 	*ws.WsClient
 	applet.MethodType

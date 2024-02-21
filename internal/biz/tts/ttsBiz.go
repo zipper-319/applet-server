@@ -38,9 +38,9 @@ func NewTTSClient(c *conf.App, data *data.Data, logger *log.MyLogger) *TTSClient
 	}
 }
 
-func (c *TTSClient) GetSpeechClient(env applet.ENV_TYPE) (v2.CloudMindsTTSClient, error) {
+func (c *TTSClient) GetSpeechClient(env applet.EnvType) (v2.CloudMindsTTSClient, error) {
 	ctx, _ := context.WithTimeout(context.Background(), c.timeout)
-	conn, err := grpc.DialContext(ctx, c.GetASRAddr(string(env)),
+	conn, err := grpc.DialContext(ctx, c.GetTTSAddr(string(env)),
 		grpc.WithInsecure(),
 	)
 	if err != nil {

@@ -38,7 +38,7 @@ func NewAsRControllerClient(c *conf.App, data *data.Data, logger *log.MyLogger) 
 	}
 }
 
-func (c *AsRControllerClient) GetSpeechClient(env applet.ENV_TYPE) (pb.SpeechClient, error) {
+func (c *AsRControllerClient) GetSpeechClient(env applet.EnvType) (pb.SpeechClient, error) {
 	ctx, _ := context.WithTimeout(context.Background(), c.timeout)
 	conn, err := grpc.DialContext(ctx, c.GetASRAddr(string(env)),
 		grpc.WithInsecure(),

@@ -41,9 +41,9 @@ func NewTalkClient(c *conf.App, data *data.Data, logger *log.MyLogger) *TalkClie
 	}
 }
 
-func (c *TalkClient) GetSpeechClient(env applet.ENV_TYPE) (pb.TalkClient, error) {
+func (c *TalkClient) GetSpeechClient(env applet.EnvType) (pb.TalkClient, error) {
 	ctx, _ := context.WithTimeout(context.Background(), c.timeout)
-	conn, err := grpc.DialContext(ctx, c.GetASRAddr(string(env)),
+	conn, err := grpc.DialContext(ctx, c.GetNLPAddr(string(env)),
 		grpc.WithInsecure(),
 	)
 	if err != nil {
