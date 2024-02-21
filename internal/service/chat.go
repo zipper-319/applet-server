@@ -47,9 +47,8 @@ func (c *ChatService) HandlerVoice(ctx context.Context, vadOutChan chan []byte, 
 	c.WithContext(ctx).Debug("--------------start to  handler Voice-----------")
 
 	asrOutChan := make(chan string, 10)
-	if err := c.AsRControllerClient.StreamingRecognize(ctx, session, vadOutChan, asrOutChan); err != nil {
-		return err
-	}
+	go c.AsRControllerClient.StreamingRecognize(ctx, session, vadOutChan, asrOutChan)
+
 	asrResult := ""
 	c.WithContext(ctx).Debug("await to asrResult ")
 	for asrText := range asrOutChan {
@@ -60,6 +59,9 @@ func (c *ChatService) HandlerVoice(ctx context.Context, vadOutChan chan []byte, 
 		}
 	}
 	session.SendingMsgToClient(ctx, applet.ServiceType_Service_ASR, asrResult, true, "")
+	if asrResult == "" {
+		return fmt.Errorf("asrResult is empty")
+	}
 
 	talkRespCh := make(chan data.TalkResp, 10)
 	if err := c.TalkClient.StreamingTalkByText(ctx, asrResult, session, talkRespCh); err != nil {
@@ -98,7 +100,7 @@ func (c *ChatService) HandlerText(ctx context.Context, body string, session *dat
 			fmt.Println(string(debug.Stack()))
 		}
 	}()
-	c.WithContext(ctx).Infof("text:%s", body)
+	c.WithContext(ctx).Infof("HandlerText;text:%s; session:%v", body, session)
 	if session == nil {
 		return errors.New("session is nil")
 	}
@@ -145,7 +147,7 @@ func (c *ChatService) HandlerTTSToClient(ctx context.Context, ttsText, language 
 		wg.Done()
 	}()
 	ttsParam := session.TtsParam.Load().(*data.TTSParam)
-	log.Debugf("start to call tts; sessionId:%s, ttsText:%s, ttsParam:%+v", ttsText, ttsParam)
+	log.Debugf("start to call tts; ttsText:%s, ttsParam:%+v", ttsText, ttsParam)
 	ttsChan, err := c.CallTTSV2(ctx, session, ttsParam, ttsText, language)
 	if err != nil {
 		c.WithContext(ctx).Errorf("ttsText:%s, call tts error:%v", ttsText, err)
@@ -156,4 +158,5 @@ func (c *ChatService) HandlerTTSToClient(ctx context.Context, ttsText, language 
 			c.Errorf("ttsText:%s, send tts error:%v", ttsText, err)
 		}
 	}
+	session.SendingMsgToClient(ctx, applet.ServiceType_Service_TTS, "", true, "")
 }

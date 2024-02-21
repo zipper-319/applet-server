@@ -21,6 +21,7 @@ message ChatWSReq {
   string position = 2;
   string language = 3;
   int32  agent_id = 4;
+  ENV_TYPE  env_type = 5;
 }
 
 message ChatWSResp {
@@ -125,4 +126,13 @@ enum MethodType{
 enum  ChatStatus{
   activated = 0;
   sleep = 1;
+}
+
+enum ENV_TYPE {
+  prod_m8 = 0;
+  fit_86 = 1;
+  prod_251 = 2;
+  prod_85 = 3;
+  fit_87 = 4;
+  sit_134 = 5;
 }

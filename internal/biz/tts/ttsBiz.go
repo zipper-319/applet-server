@@ -1,6 +1,7 @@
 package tts
 
 import (
+	"applet-server/api/v2/applet"
 	"applet-server/internal/biz/tts/proto/v1"
 	"applet-server/internal/biz/tts/proto/v2"
 	"applet-server/internal/conf"
@@ -10,15 +11,19 @@ import (
 	"github.com/google/uuid"
 	"google.golang.org/grpc"
 	"io"
+	"time"
 )
 
 type TTSClient struct {
 	*grpc.ClientConn
 	*log.MyLogger
+	timeout time.Duration
+	*data.Data
 }
 
-func NewTTSClient(c *conf.App, logger *log.MyLogger) *TTSClient {
-	ctx, _ := context.WithTimeout(context.Background(), c.Tts.GetTimeout().AsDuration())
+func NewTTSClient(c *conf.App, data *data.Data, logger *log.MyLogger) *TTSClient {
+	timeout := c.Tts.GetTimeout().AsDuration()
+	ctx, _ := context.WithTimeout(context.Background(), timeout)
 	conn, err := grpc.DialContext(ctx, c.Tts.GetAddr(),
 		grpc.WithInsecure(),
 	)
@@ -28,14 +33,31 @@ func NewTTSClient(c *conf.App, logger *log.MyLogger) *TTSClient {
 	return &TTSClient{
 		ClientConn: conn,
 		MyLogger:   logger,
+		timeout:    timeout,
+		Data:       data,
 	}
+}
+
+func (c *TTSClient) GetSpeechClient(env applet.ENV_TYPE) (v2.CloudMindsTTSClient, error) {
+	ctx, _ := context.WithTimeout(context.Background(), c.timeout)
+	conn, err := grpc.DialContext(ctx, c.GetASRAddr(string(env)),
+		grpc.WithInsecure(),
+	)
+	if err != nil {
+		return nil, err
+	}
+	client := v2.NewCloudMindsTTSClient(conn)
+	return client, nil
 }
 
 func (c *TTSClient) CallTTSV2(ctx context.Context, session *data.Session, ttsParam *data.TTSParam, text, language string) (chan []byte, error) {
 	username := session.Username
 	traceId := ctx.Value("questionId").(string)
 	sessionId := ctx.Value("sessionId").(string)
-	ttsV2Client := v2.NewCloudMindsTTSClient(c.ClientConn)
+	ttsV2Client, err := c.GetSpeechClient(session.Env)
+	if err != nil {
+		return nil, err
+	}
 	req := &v2.TtsReq{
 		Text:                 text,
 		ParameterSpeakerName: ttsParam.Speaker,
@@ -54,7 +76,6 @@ func (c *TTSClient) CallTTSV2(ctx context.Context, session *data.Session, ttsPar
 
 	response, err := ttsV2Client.Call(ctx, req)
 	if err != nil {
-		c.Errorf("traceId:%s,Text:%s, err;%v", traceId, text, err)
 		return nil, err
 	}
 

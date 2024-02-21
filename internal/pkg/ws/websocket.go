@@ -34,8 +34,8 @@ func NewWsClient(conn *websocket.Conn, logger *log.MyLogger) *WsClient {
 func (c *WsClient) SendingMsgToClient(ctx context.Context, msgType applet.ServiceType, content interface{}, isEnd bool, errMsg string) error {
 
 	c.WithContext(ctx).Debugf("sending message to Client;msgType %s ", msgType)
-	questionId := ctx.Value("questionId").(string)
-	sessionId := ctx.Value("sessionId").(string)
+	questionId, _ := ctx.Value("questionId").(string)
+	sessionId, _ := ctx.Value("sessionId").(string)
 	c.Lock()
 	defer c.Unlock()
 	if errMsg != "" {
@@ -51,6 +51,8 @@ func (c *WsClient) SendingMsgToClient(ctx context.Context, msgType applet.Servic
 	}
 	return c.WriteJSON(ChatServerMessage{
 		ServiceType: msgType,
+		QuestionId:  questionId,
+		SessionId:   sessionId,
 		Content:     content,
 		IsEnd:       isEnd,
 		IsSuccess:   true,

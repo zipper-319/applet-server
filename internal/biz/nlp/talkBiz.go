@@ -1,6 +1,7 @@
 package nlp
 
 import (
+	"applet-server/api/v2/applet"
 	"applet-server/internal/biz/nlp/proto"
 	"applet-server/internal/conf"
 	"applet-server/internal/data"
@@ -13,15 +14,19 @@ import (
 	"google.golang.org/grpc"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type TalkClient struct {
 	*grpc.ClientConn
 	*log.MyLogger
+	*data.Data
+	timeout time.Duration
 }
 
-func NewTalkClient(c *conf.App, logger *log.MyLogger) *TalkClient {
-	ctx, _ := context.WithTimeout(context.Background(), c.Asr.GetTimeout().AsDuration())
+func NewTalkClient(c *conf.App, data *data.Data, logger *log.MyLogger) *TalkClient {
+	timeout := c.Asr.GetTimeout().AsDuration()
+	ctx, _ := context.WithTimeout(context.Background(), timeout)
 	conn, err := grpc.DialContext(ctx, c.Nlp.GetAddr(),
 		grpc.WithInsecure(),
 	)
@@ -31,12 +36,29 @@ func NewTalkClient(c *conf.App, logger *log.MyLogger) *TalkClient {
 	return &TalkClient{
 		ClientConn: conn,
 		MyLogger:   logger,
+		Data:       data,
+		timeout:    timeout,
 	}
+}
+
+func (c *TalkClient) GetSpeechClient(env applet.ENV_TYPE) (pb.TalkClient, error) {
+	ctx, _ := context.WithTimeout(context.Background(), c.timeout)
+	conn, err := grpc.DialContext(ctx, c.GetASRAddr(string(env)),
+		grpc.WithInsecure(),
+	)
+	if err != nil {
+		return nil, err
+	}
+	client := pb.NewTalkClient(conn)
+	return client, nil
 }
 
 func (c *TalkClient) StreamingTalk(ctx context.Context, session *data.Session, questionStream chan string) (talkRespCh chan data.TalkResp, err error) {
 	talkRespCh = make(chan data.TalkResp, 10)
-	streamingTalkClient := pb.NewTalkClient(c.ClientConn)
+	streamingTalkClient, err := c.GetSpeechClient(session.Env)
+	if err != nil {
+		return
+	}
 	streamingTalk, err := streamingTalkClient.StreamingTalk(ctx)
 
 	if err != nil {
@@ -66,7 +88,10 @@ func (c *TalkClient) StreamingTalk(ctx context.Context, session *data.Session, q
 func (c *TalkClient) StreamingTalkByText(ctx context.Context, question string, session *data.Session, talkRespCh chan data.TalkResp) error {
 
 	questionId := ctx.Value("questionId").(string)
-	streamingTalkClient := pb.NewTalkClient(c.ClientConn)
+	streamingTalkClient, err := c.GetSpeechClient(session.Env)
+	if err != nil {
+		return err
+	}
 	streamingTalk, err := streamingTalkClient.StreamingTalk(ctx)
 	if err != nil {
 		return err

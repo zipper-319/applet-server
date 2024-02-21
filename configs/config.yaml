@@ -14,24 +14,22 @@ app:
     addr: 172.16.23.86:31349
     timeout: 10s
   asr:
-    # 172.16.23.85:30938
-    addr: 172.16.13.134:30938
+    addr: 172.16.23.86:31851
     timeout: 10s
   nlp:
-    # 172.16.23.85:30811
-    addr: 172.16.13.121:31402
+    addr: 172.16.23.86:30811
     timeout: 10s
   feedback:
-    addr: 172.16.23.85:31053
+    addr: 172.16.23.86:31053
     timeout: 10s
 
 data:
   database:
     driver: mysql
-    source: root:@tcp(172.16.23.33:3306)/mp
+    source: root:cloud1688@tcp(10.12.32.198:3306)/mp
   redis:
-    addr: 172.16.23.33:9527
-    password: cloudminds88
+    addr: 10.12.32.187:6379
+    password:
     read_timeout: 2s
     write_timeout: 2s
     max_retries: 3

@@ -9,11 +9,13 @@ import (
 	"applet-server/internal/data/train"
 	"applet-server/internal/pkg/log"
 	"applet-server/internal/pkg/ws"
+	"encoding/json"
 	"github.com/gorilla/websocket"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/atomic"
 	"gorm.io/gorm"
 	"io"
+	"os"
 
 	"github.com/google/wire"
 )
@@ -27,18 +29,51 @@ type Data struct {
 	RedisClient *redis.Client
 	*gorm.DB
 	*minio.Client
-	Train *train.Train
+	Train  *train.Train
+	envMap map[string]ServiceAddr
+}
+
+type ServiceAddr struct {
+	TTS string `json:"tts"`
+	ASR string `json:"asr"`
+	NLP string `json:"nlp"`
 }
 
 // NewData .
 func NewData(s3 *s3.S3Service, rdb *redis.Client, db *gorm.DB, minioClient *minio.Client, trainObject *train.Train) (*Data, error) {
+	f, err := os.OpenFile("./configs/env.json", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		panic(err)
+	}
+	envContent, err := io.ReadAll(f)
+	if err != nil {
+		panic(err)
+	}
+	var envMap map[string]ServiceAddr
+	if err = json.Unmarshal(envContent, &envMap); err != nil {
+		panic(err)
+	}
+	log.Debugf("envMap: %v", envMap)
 	return &Data{
 		S3:          s3,
 		RedisClient: rdb,
 		DB:          db,
 		Client:      minioClient,
 		Train:       trainObject,
+		envMap:      envMap,
 	}, nil
+}
+
+func (d *Data) GetASRAddr(env string) string {
+	return d.envMap[env].ASR
+}
+
+func (d *Data) GetTTSAddr(env string) string {
+	return d.envMap[env].TTS
+}
+
+func (d *Data) GetNLPAddr(env string) string {
+	return d.envMap[env].NLP
 }
 
 type Session struct {
@@ -47,6 +82,7 @@ type Session struct {
 	RobotId  int32
 	Position string
 	AgentId  int
+	Env      applet.ENV_TYPE
 	Language *atomic.String
 	*ws.WsClient
 	applet.MethodType
@@ -102,6 +138,7 @@ func GenSession(req applet.ChatWSReq, username, sessionId string, conn *websocke
 		Position:   req.Position,
 		AgentId:    int(req.AgentId),
 		Language:   atomic.NewString(req.Language),
+		Env:        req.EnvType,
 		MethodType: req.Method,
 		WsClient:   ws.NewWsClient(conn, logger),
 	}
@@ -114,4 +151,21 @@ type TTSParam struct {
 	Emotions string
 	Speaker  string
 	IsClone  bool
+}
+
+type ChatParameter struct {
+
+	// tts
+	Speed   string `json:"speed"`
+	Volume  string ` json:"volume"`
+	Pitch   string ` json:"pitch"`
+	Speaker string ` json:"speaker"`
+	IsClone int32  ` json:"is_clone"` // 1: 不是克隆， 2：是克隆
+	// asr
+	ServiceProvider int32  `json:"service_provider"` // 1:达闼  2：Google  3：科大讯飞  4:CPAll
+	LanguageType    int32  `json:"language_type"`    //语言类型：    1:CH  2:EN 3:TCH 4:JA 5:ES 6:TH
+	ServiceType     int32  `json:"service_type"`
+	Agent           int32  `json:"agent"`
+	Language        string ` json:"language"`
+	Position        string ` json:"position"`
 }

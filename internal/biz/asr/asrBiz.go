@@ -1,6 +1,7 @@
 package asr
 
 import (
+	"applet-server/api/v2/applet"
 	pb "applet-server/internal/biz/asr/proto"
 	"applet-server/internal/conf"
 	"applet-server/internal/data"
@@ -16,10 +17,13 @@ import (
 type AsRControllerClient struct {
 	*grpc.ClientConn
 	*log.MyLogger
+	*data.Data
+	timeout time.Duration
 }
 
-func NewAsRControllerClient(c *conf.App, logger *log.MyLogger) *AsRControllerClient {
-	ctx, _ := context.WithTimeout(context.Background(), c.Asr.GetTimeout().AsDuration())
+func NewAsRControllerClient(c *conf.App, data *data.Data, logger *log.MyLogger) *AsRControllerClient {
+	timeout := c.Asr.GetTimeout().AsDuration()
+	ctx, _ := context.WithTimeout(context.Background(), timeout)
 	conn, err := grpc.DialContext(ctx, c.Asr.GetAddr(),
 		grpc.WithInsecure(),
 	)
@@ -29,21 +33,41 @@ func NewAsRControllerClient(c *conf.App, logger *log.MyLogger) *AsRControllerCli
 	return &AsRControllerClient{
 		ClientConn: conn,
 		MyLogger:   logger,
+		timeout:    timeout,
+		Data:       data,
 	}
 }
 
-func (c *AsRControllerClient) StreamingRecognize(ctx context.Context, session *data.Session, voiceDataCh chan []byte, asrRecognizedText chan string) error {
-	client := pb.NewSpeechClient(c.ClientConn)
-	streamClient, err := client.StreamingRecognize(ctx)
-	questionId := ctx.Value("questionId").(string)
+func (c *AsRControllerClient) GetSpeechClient(env applet.ENV_TYPE) (pb.SpeechClient, error) {
+	ctx, _ := context.WithTimeout(context.Background(), c.timeout)
+	conn, err := grpc.DialContext(ctx, c.GetASRAddr(string(env)),
+		grpc.WithInsecure(),
+	)
 	if err != nil {
-		c.WithContext(ctx).Infof("streamingRecognize error: %v", err)
-		return err
+		return nil, err
 	}
+	client := pb.NewSpeechClient(conn)
+	return client, nil
+}
 
+func (c *AsRControllerClient) StreamingRecognize(ctx context.Context, session *data.Session, voiceDataCh chan []byte, asrRecognizedText chan string) error {
+	defer func() {
+		if err := recover(); err != nil {
+			c.Error("StreamingRecognize error:", err)
+			close(asrRecognizedText)
+		}
+	}()
+	client, err := c.GetSpeechClient(session.Env)
+	if err != nil {
+		panic(err)
+	}
+	streamClient, err := client.StreamingRecognize(ctx)
+	if err != nil {
+		panic(err)
+	}
 	// 接收流式返回结果
 	go ReceiveRecognizedText(streamClient, asrRecognizedText)
-
+	questionId := ctx.Value("questionId").(string)
 	recognitionRequest := newRecognitionRequest(strconv.Itoa(int(session.RobotId)), session.Id, session.Language.Load(), questionId, session.AgentId)
 	awaitTime := 30 * time.Second
 	vadTimer := time.NewTimer(awaitTime)
@@ -53,14 +77,15 @@ func (c *AsRControllerClient) StreamingRecognize(ctx context.Context, session *d
 		select {
 		case voiceData, ok := <-voiceDataCh:
 			if ok {
-				c.Debug("StreamingRecognize voice data; the length", len(voiceData))
+				c.WithContext(ctx).Debugf("StreamingRecognize voice data; the length:%d", len(voiceData))
 				recognitionRequest.Body.Data.Speech = voiceData
-				err = streamClient.Send(recognitionRequest)
-				// 重置超时定时器
-				vadTimer.Reset(awaitTime)
-				if err != nil {
+
+				if err = streamClient.Send(recognitionRequest); err != nil && err != io.EOF {
 					return err
 				}
+				// 重置超时定时器
+				vadTimer.Reset(awaitTime)
+
 			} else {
 				goto END
 			}
@@ -68,29 +93,34 @@ func (c *AsRControllerClient) StreamingRecognize(ctx context.Context, session *d
 		case <-vadTimer.C:
 			c.WithContext(ctx).Debug("StreamingRecognize timeout")
 			goto END
+		case <-ctx.Done():
+			c.WithContext(ctx).Debug("StreamingRecognize done")
+			goto END
 		}
 	}
 END:
-	recognitionRequest.Body.Data.Speech = nil
-	recognitionRequest.Extra = &pb.Extra{ExtraType: "audioExtra", ExtraBody: "val"}
-
-	if err = streamClient.Send(recognitionRequest); err != nil {
-		return err
-	}
+	//recognitionRequest.Body.Data.Speech = nil
+	//recognitionRequest.Extra = &pb.Extra{ExtraType: "audioExtra", ExtraBody: "val"}
+	//
+	//if err = streamClient.Send(recognitionRequest); err != nil {
+	//	return err
+	//}
 	streamClient.CloseSend()
+	c.WithContext(ctx).Debug("StreamingRecognize finish to  send")
 	return nil
 }
 
 func ReceiveRecognizedText(streamClient pb.Speech_StreamingRecognizeClient, recognizedTextCh chan string) {
-	defer close(recognizedTextCh)
+	defer func() {
+		close(recognizedTextCh)
+		log.Debugf("ReceiveRecognizedText; finish to receive asr text")
+	}()
 	for {
 		response, err := streamClient.Recv()
-		if err == io.EOF {
-			return
-		}
 		if err != nil {
 			return
 		}
+		log.Debugf("ReceiveRecognizedText response: %v", response)
 		if response.DetailMessage != nil {
 			recognizedText := (response.DetailMessage.Fields["recognizedText"]).GetStringValue()
 			if recognizedText != "" {

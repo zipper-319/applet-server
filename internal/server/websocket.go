@@ -92,7 +92,7 @@ func ChatWebsocketHandler(srv ChatWebsocketServer, logger *log.MyLogger) func(ct
 
 				defer func() {
 					connectTimer.Stop()
-					logger.WithContext(subCtx).Debugf("[websocket] close conn; handle defer; sessionId: %s; err:%v", err)
+					logger.WithContext(subCtx).Debugf("[websocket] close conn; handle defer; sessionId: %s; err:%v", sessionId, err)
 				}()
 			}
 
@@ -106,12 +106,12 @@ func ChatWebsocketHandler(srv ChatWebsocketServer, logger *log.MyLogger) func(ct
 					logger.WithContext(subCtx).Errorf("[websocket] read message error: %v", err)
 					return nil, err
 				}
-				logger.WithContext(subCtx).Debugf("sessionId:%s;reset:%t", session.Id, connectTimer.Reset(awaitTime))
 
 				switch messageType {
 				case websocket.CloseMessage:
 					return nil, nil
 				case websocket.BinaryMessage:
+					logger.WithContext(subCtx).Debugf("[websocket] receive binary message, length: %d", len(message))
 					if vadInputCh != nil && len(message) > 0 {
 						vadInputCh <- message
 					}
@@ -140,9 +140,9 @@ func ChatWebsocketHandler(srv ChatWebsocketServer, logger *log.MyLogger) func(ct
 						}
 						break
 					}
-					logger.WithContext(subCtx).Debugf("chatMsg:%v", chatMsg)
+					logger.WithContext(subCtx).Debugf("MessageType:%s, content:%s", chatMsg.MessageType, chatMsg.Content)
 					if chatMsg.MessageType == applet.MessageType_chat_text {
-						subCtx =  context.WithValue(subCtx, "questionId", uuid.New().String())
+						subCtx = context.WithValue(subCtx, "questionId", uuid.New().String())
 						go srv.HandlerText(subCtx, chatMsg.Content, session)
 					}
 					if chatMsg.MessageType == applet.MessageType_chat_voice {
@@ -170,10 +170,10 @@ func ChatWebsocketHandler(srv ChatWebsocketServer, logger *log.MyLogger) func(ct
 					}
 
 					if chatMsg.MessageType == applet.MessageType_chat_parameter {
-						var parameter applet.ChatParameter
+						var parameter data.ChatParameter
 						if err := json.Unmarshal([]byte(chatMsg.Content), &parameter); err != nil {
 							logger.WithContext(subCtx).Errorf("[websocket] unmarshal parameter error: %v\n", err)
-							session.SendingMsgToClient(ctx, applet.ServiceType_Service_VAD, "", true, err.Error())
+							session.SendingMsgToClient(subCtx, applet.ServiceType_Service_VAD, "", true, err.Error())
 						} else {
 
 							logger.WithContext(subCtx).Debugf("[websocket] parameter; parameter:%v", parameter)

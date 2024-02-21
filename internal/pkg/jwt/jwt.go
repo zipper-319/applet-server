@@ -211,7 +211,7 @@ func ParseToken(token, key string) (*IdentityClaims, error) {
 	}
 
 	if claims, ok := tokenInfo.Claims.(*IdentityClaims); ok {
-		log.Debug("tokenInfo  userName:", claims.Username)
+		log.Debugf("tokenInfo  userName:%s", claims.Username)
 		return claims, nil
 	}
 	return nil, err
