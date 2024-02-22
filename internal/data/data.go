@@ -61,14 +61,17 @@ func NewData(s3 *s3.S3Service, rdb *redis.Client, db *gorm.DB, minioClient *mini
 }
 
 func (d *Data) GetASRAddr(env string) string {
+	log.Debugf("envMap:%v, env: %s; addr:%s", d.envMap, env, d.envMap[env].ASR)
 	return d.envMap[env].ASR
 }
 
 func (d *Data) GetTTSAddr(env string) string {
+	log.Debugf("envMap:%v, env: %s; addr:%s", d.envMap, env, d.envMap[env].TTS)
 	return d.envMap[env].TTS
 }
 
 func (d *Data) GetNLPAddr(env string) string {
+	log.Debugf("envMap:%v, env: %s; addr:%s", d.envMap, env, d.envMap[env].NLP)
 	return d.envMap[env].NLP
 }
 

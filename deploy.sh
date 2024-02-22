@@ -7,7 +7,7 @@ user="annotation"
 password="7GXZUsYFYP.Jrq"
 CI_COMMIT_TAG=`git log --pretty=format:"%h" -1`
 DOCKER_REGISTRY_HOST="harbor.cloudminds.com"
-VERSION="v1.0.2"
+VERSION="v1.1.0"
 
 make build
 

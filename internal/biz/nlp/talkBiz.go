@@ -41,9 +41,10 @@ func NewTalkClient(c *conf.App, data *data.Data, logger *log.MyLogger) *TalkClie
 	}
 }
 
-func (c *TalkClient) GetSpeechClient(env applet.EnvType) (pb.TalkClient, error) {
+func (c *TalkClient) GetTalkClient(env applet.EnvType) (pb.TalkClient, error) {
 	ctx, _ := context.WithTimeout(context.Background(), c.timeout)
-	conn, err := grpc.DialContext(ctx, c.GetNLPAddr(string(env)),
+	addr := c.GetNLPAddr(env.String())
+	conn, err := grpc.DialContext(ctx, addr,
 		grpc.WithInsecure(),
 	)
 	if err != nil {
@@ -55,7 +56,7 @@ func (c *TalkClient) GetSpeechClient(env applet.EnvType) (pb.TalkClient, error) 
 
 func (c *TalkClient) StreamingTalk(ctx context.Context, session *data.Session, questionStream chan string) (talkRespCh chan data.TalkResp, err error) {
 	talkRespCh = make(chan data.TalkResp, 10)
-	streamingTalkClient, err := c.GetSpeechClient(session.Env)
+	streamingTalkClient, err := c.GetTalkClient(session.Env)
 	if err != nil {
 		return
 	}
@@ -88,7 +89,7 @@ func (c *TalkClient) StreamingTalk(ctx context.Context, session *data.Session, q
 func (c *TalkClient) StreamingTalkByText(ctx context.Context, question string, session *data.Session, talkRespCh chan data.TalkResp) error {
 
 	questionId := ctx.Value("questionId").(string)
-	streamingTalkClient, err := c.GetSpeechClient(session.Env)
+	streamingTalkClient, err := c.GetTalkClient(session.Env)
 	if err != nil {
 		return err
 	}

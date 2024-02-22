@@ -41,6 +41,7 @@ type CollectQAResp struct {
 type CollectResp struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
+	Status  bool   `json:"status"`
 }
 
 type CollectBugReq struct {
@@ -67,13 +68,13 @@ type IntentParam struct {
 type DislikeCommon struct {
 	AgentId        int32  `json:"agentid"`
 	QuestionId     string `json:"questionid"`
-	Question       string
-	Answer         string
+	Question       string `json:"question"`
+	Answer         string `json:"answer"`
 	BugType        string `json:"bugtype"`
 	FeedbackTime   string `json:"feedbacktime"`
 	FeedbackPerson string `json:"feedbackperson"`
-	env            string
-	lang           string
+	Env            string `json:"env"`
+	Lang           string `json:"lang"`
 	SessionId      string `json:"sessionid"`
 	RobotType      string `json:"robottype"`
 }
@@ -81,13 +82,13 @@ type DislikeCommon struct {
 type LikeCommon struct {
 	AgentId        int32  `json:"agentid"`
 	QuestionId     string `json:"questionid"`
-	Question       string
-	Answer         string
+	Question       string `json:"question"`
+	Answer         string `json:"answer"`
 	BugType        string `json:"bugtype"`
 	FeedbackTime   string `json:"feedbacktime"`
 	FeedbackPerson string `json:"feedbackperson"`
-	env            string
-	lang           string
+	Env            string `json:"env"`
+	Lang           string `json:"lang"`
 	SessionId      string `json:"sessionid"`
 	RobotType      string `json:"robottype"`
 }
@@ -126,7 +127,9 @@ func (s *FeedbackService) Collect(ctx context.Context, req *pb.CollectReq) (*emp
 	}
 	s.Infof("result: %s", result)
 	var respData CollectQAResp
-	json.Unmarshal(result, &respData)
+	if err := json.Unmarshal(result, &respData); err != nil {
+		return nil, err
+	}
 	if respData.Code == 0 && respData.Status {
 		return &emptypb.Empty{}, nil
 	} else {
@@ -159,8 +162,8 @@ func (s *FeedbackService) CollectLike(ctx context.Context, req *pb.CollectLikeRe
 			Answer:         req.Answer,
 			FeedbackTime:   time.Now().Format(time.RFC3339),
 			FeedbackPerson: username,
-			env:            req.EnvType,
-			lang:           req.Language,
+			Env:            req.EnvType,
+			Lang:           req.Language,
 			RobotType:      "weixin",
 		},
 		Mark:         "",
@@ -177,11 +180,13 @@ func (s *FeedbackService) CollectLike(ctx context.Context, req *pb.CollectLikeRe
 	}
 	s.Infof("result: %s", result)
 	var resp CollectResp
-	json.Unmarshal(result, &resp)
-	if resp.Code == 0 {
+	if err := json.Unmarshal(result, &resp); err != nil {
+		return nil, err
+	}
+	if resp.Code == 0 && resp.Status {
 		return &emptypb.Empty{}, nil
 	} else {
-		return &emptypb.Empty{}, errors.New(resp.Message)
+		return nil, errors.New(resp.Message)
 	}
 
 }
@@ -203,9 +208,9 @@ func (s *FeedbackService) CollectDislike(ctx context.Context, req *pb.CollectDis
 			BugType:        fmt.Sprintf("%s-%s", req.BugType.String(), req.GetBugDesc()),
 			FeedbackTime:   time.Now().Format(time.RFC3339),
 			FeedbackPerson: username,
-			env:            req.EnvType,
-			lang:           req.Language,
-			SessionId:      "",
+			Env:            req.EnvType,
+			Lang:           req.Language,
+			SessionId:      req.SessionId,
 			RobotType:      "weixin",
 		},
 		Mark: fmt.Sprintf("%s-%s", req.Reality, req.Expectation),
@@ -218,9 +223,9 @@ func (s *FeedbackService) CollectDislike(ctx context.Context, req *pb.CollectDis
 	s.Infof("result: %s", result)
 	var resp CollectResp
 	json.Unmarshal(result, &resp)
-	if resp.Code == 0 {
+	if resp.Code == 0 && resp.Status {
 		return &emptypb.Empty{}, nil
 	} else {
-		return &emptypb.Empty{}, errors.New(resp.Message)
+		return nil, errors.New(resp.Message)
 	}
 }

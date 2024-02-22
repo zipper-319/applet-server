@@ -63,10 +63,11 @@ message  CollectLikeReq {
 }
 
 enum BugType {
-  Other =  0;
+  unknown =  0;
   ASR =  1;
-  TTS =  2;
-  NLP =  3;
+  NLP =  2;
+  TTS =  3;
+  Other = 4;
 }
 
 message CollectDislikeReq {
@@ -81,4 +82,5 @@ message CollectDislikeReq {
   string reality = 9;
   BugType bug_type = 10;
   string  bug_desc = 11;
+  string  session_id = 12;
 }

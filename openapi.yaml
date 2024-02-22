@@ -303,6 +303,8 @@ components:
                     format: enum
                 bugDesc:
                     type: string
+                sessionId:
+                    type: string
         applet.v2.CollectLikeReq:
             type: object
             properties:

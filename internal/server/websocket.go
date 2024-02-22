@@ -145,7 +145,7 @@ func ChatWebsocketHandler(srv ChatWebsocketServer, logger *log.MyLogger) func(ct
 						subCtx = context.WithValue(subCtx, "questionId", uuid.New().String())
 						go func() {
 							if err := srv.HandlerText(subCtx, chatMsg.Content, session); err != nil {
-								logger.WithContext(subCtx).Error(err)
+								logger.WithContext(subCtx).Errorf("HandlerText; err:%s", err.Error())
 							}
 						}()
 					}

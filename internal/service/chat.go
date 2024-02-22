@@ -100,7 +100,7 @@ func (c *ChatService) HandlerText(ctx context.Context, body string, session *dat
 			fmt.Println(string(debug.Stack()))
 		}
 	}()
-	c.WithContext(ctx).Infof("HandlerText;text:%s; session:%v", body, session)
+	c.WithContext(ctx).Infof("HandlerText;text:%s; env:%s, username:%s", body, session.Env, session.Username)
 	if session == nil {
 		return errors.New("session is nil")
 	}
