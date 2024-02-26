@@ -225,6 +225,20 @@ func parseTalkResp(resp *pb.TalkResponse) data.TalkResp {
 		if resp.HitLog != nil {
 			talkResp.Domain = resp.HitLog.Fields["domain"].GetStringValue()
 			talkResp.Intent = resp.HitLog.Fields["intent"].GetStringValue()
+
+			if paramInfo := resp.HitLog.Fields["paraminfo"]; paramInfo != nil {
+				paramList := paramInfo.GetListValue().Values
+				actParamList := make([]*applet.CollectLikeReq_Entity, 0)
+				for _, p := range paramList {
+					actParamList = append(actParamList, &applet.CollectLikeReq_Entity{
+						BeforeValue: p.GetStructValue().GetFields()["BeforeValue"].GetStringValue(),
+						Type:        p.GetStructValue().GetFields()["EntityType"].GetStringValue(),
+						Name:        p.GetStructValue().GetFields()["Name"].GetStringValue(),
+						Value:       p.GetStructValue().GetFields()["Value"].GetStringValue(),
+					})
+				}
+				talkResp.Entity = actParamList
+			}
 		}
 
 	}

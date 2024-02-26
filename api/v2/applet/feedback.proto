@@ -59,7 +59,8 @@ message  CollectLikeReq {
   repeated Entity entities = 7;
   string source = 8;
   string  domain = 9;
-  string env_type = 10;
+  Env_Type env_type = 10;
+  string session_id = 11;
 }
 
 enum BugType {
@@ -72,7 +73,7 @@ enum BugType {
 
 message CollectDislikeReq {
   string question_id = 1;
-  string env_type =  2;
+  Env_Type env_type =  2;
   int32  agent_id = 3;
   string language = 4;
   string question = 5;
@@ -84,3 +85,14 @@ message CollectDislikeReq {
   string  bug_desc = 11;
   string  session_id = 12;
 }
+
+enum Env_Type {
+  m8 = 0;
+  fit86 = 1;
+  prod251 = 2;
+  prod85 = 3;
+  fit87 = 4;
+  sit134 = 5;
+}
+
+

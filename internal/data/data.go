@@ -103,7 +103,8 @@ type TalkResp struct {
 	// 技能领域
 	Domain string `json:"domain"`
 	// 意图
-	Intent string `json:"intent"`
+	Intent string                          `json:"intent"`
+	Entity []*applet.CollectLikeReq_Entity `json:"entity"`
 }
 
 type Answer struct {

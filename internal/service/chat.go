@@ -72,6 +72,7 @@ func (c *ChatService) HandlerVoice(ctx context.Context, vadOutChan chan []byte, 
 
 	for resp := range talkRespCh {
 		c.WithContext(ctx).Debugf("resp:%v", resp)
+		resp.Question = asrResult
 		if err := session.SendingMsgToClient(ctx, applet.ServiceType_Service_Nlp, resp, false, ""); err != nil {
 			return err
 		}
@@ -117,7 +118,7 @@ func (c *ChatService) HandlerText(ctx context.Context, body string, session *dat
 		}
 
 		for resp := range talkRespCh {
-
+			resp.Question = body
 			if err := session.SendingMsgToClient(ctx, applet.ServiceType_Service_Nlp, resp, false, ""); err != nil {
 				return err
 			}

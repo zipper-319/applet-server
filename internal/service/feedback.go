@@ -5,6 +5,7 @@ import (
 	"applet-server/internal/pkg/http"
 	jwtUtil "applet-server/internal/pkg/jwt"
 	"applet-server/internal/pkg/log"
+	"applet-server/internal/pkg/util"
 	"time"
 
 	"context"
@@ -51,7 +52,6 @@ type CollectBugReq struct {
 
 type CollectUseCaseReq struct {
 	LikeCommon   LikeCommon    `json:"likeCommon"`
-	Mark         string        `json:"mark"`
 	Source       string        `json:"source"`
 	Domain       string        `json:"domain"`
 	Intent       string        `json:"intentname"`
@@ -162,16 +162,15 @@ func (s *FeedbackService) CollectLike(ctx context.Context, req *pb.CollectLikeRe
 			Answer:         req.Answer,
 			FeedbackTime:   time.Now().Format(time.RFC3339),
 			FeedbackPerson: username,
-			Env:            req.EnvType,
+			Env:            util.EnvTypeName[req.EnvType],
 			Lang:           req.Language,
 			RobotType:      "weixin",
 		},
-		Mark:         "",
 		Source:       req.Source,
 		Domain:       req.Domain,
 		Intent:       req.Intent,
 		IntentParams: intentParams,
-		QGroupId:     "",
+		QGroupId:     req.SessionId,
 	}
 	collectReqStr, _ := json.Marshal(collectReq)
 	result, err := http.Post(addr, collectReqStr)
@@ -208,7 +207,7 @@ func (s *FeedbackService) CollectDislike(ctx context.Context, req *pb.CollectDis
 			BugType:        fmt.Sprintf("%s-%s", req.BugType.String(), req.GetBugDesc()),
 			FeedbackTime:   time.Now().Format(time.RFC3339),
 			FeedbackPerson: username,
-			Env:            req.EnvType,
+			Env:            util.EnvTypeName[req.EnvType],
 			Lang:           req.Language,
 			SessionId:      req.SessionId,
 			RobotType:      "weixin",

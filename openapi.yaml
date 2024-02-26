@@ -282,7 +282,8 @@ components:
                 questionId:
                     type: string
                 envType:
-                    type: string
+                    type: integer
+                    format: enum
                 agentId:
                     type: integer
                     format: int32
@@ -330,6 +331,9 @@ components:
                 domain:
                     type: string
                 envType:
+                    type: integer
+                    format: enum
+                sessionId:
                     type: string
         applet.v2.CollectLikeReq_Entity:
             type: object
