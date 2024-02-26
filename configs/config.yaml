@@ -26,9 +26,9 @@ app:
 data:
   database:
     driver: mysql
-    source: root:cloud1688@tcp(10.12.32.198:3306)/mp
+    source: root:@tcp(172.16.23.33:3306)/mp
   redis:
-    addr: 10.12.32.187:6379
+    addr: 172.16.23.33:6379
     password:
     read_timeout: 2s
     write_timeout: 2s
