@@ -26,7 +26,7 @@ app:
 data:
   database:
     driver: mysql
-    source: root:@tcp(172.16.23.33:3306)/mp
+    source: root:cloud1688@tcp(172.16.23.86:30780)/mp
   redis:
     addr: 172.16.23.33:6379
     password:
