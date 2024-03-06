@@ -47,6 +47,8 @@ type CollectResp struct {
 
 type CollectBugReq struct {
 	DislikeCommon DislikeCommon `json:"dislikecommon"`
+	Reality       string        `json:"reality"`
+	Expectation   string        `json:"expectation"`
 	Mark          string        `json:"mark"`
 }
 
@@ -212,7 +214,9 @@ func (s *FeedbackService) CollectDislike(ctx context.Context, req *pb.CollectDis
 			SessionId:      req.SessionId,
 			RobotType:      "weixin",
 		},
-		Mark: fmt.Sprintf("%s-%s", req.Reality, req.Expectation),
+		Expectation: req.Expectation,
+		Reality:     req.Reality,
+		Mark:        fmt.Sprintf("%s-%s", req.Reality, req.Expectation),
 	}
 	collectReqStr, _ := json.Marshal(collectReq)
 	result, err := http.Post(addr, collectReqStr)
