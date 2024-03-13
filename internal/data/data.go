@@ -170,6 +170,7 @@ type ChatParameter struct {
 	ServiceProvider int32  `json:"service_provider"` // 1:达闼  2：Google  3：科大讯飞  4:CPAll
 	LanguageType    int32  `json:"language_type"`    //语言类型：    1:CH  2:EN 3:TCH 4:JA 5:ES 6:TH
 	ServiceType     int32  `json:"service_type"`
+	RobotId         string `json:"robot_id"`
 	Agent           int32  `json:"agent"`
 	Language        string ` json:"language"`
 	Position        string ` json:"position"`
