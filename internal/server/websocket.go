@@ -213,6 +213,7 @@ func ChatWebsocketHandler(srv ChatWebsocketServer, logger *log.MyLogger) func(ct
 								asrParamNew.AsrDomain = applet.ServiceType(parameter.ServiceType).String()
 							}
 							session.TtsParam.Store(ttsParamNew)
+							session.AsrParam.Store(asrParamNew)
 						}
 					}
 
