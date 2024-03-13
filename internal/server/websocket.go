@@ -210,7 +210,7 @@ func ChatWebsocketHandler(srv ChatWebsocketServer, logger *log.MyLogger) func(ct
 								}
 							}
 							if parameter.ServiceType > 0 {
-								asrParamNew.AsrDomain = applet.ServiceType(parameter.ServiceType).String()
+								asrParamNew.AsrDomain = applet.AsrDomain(parameter.ServiceType).String()
 							}
 							session.TtsParam.Store(ttsParamNew)
 							session.AsrParam.Store(asrParamNew)
