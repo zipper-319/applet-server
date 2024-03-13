@@ -68,7 +68,8 @@ func (c *AsRControllerClient) StreamingRecognize(ctx context.Context, session *d
 	// 接收流式返回结果
 	go ReceiveRecognizedText(streamClient, asrRecognizedText)
 	questionId := ctx.Value("questionId").(string)
-	recognitionRequest := newRecognitionRequest(strconv.Itoa(int(session.RobotId)), session.Id, session.Language.Load(), questionId, session.AgentId)
+	asrParam := session.AsrParam.Load().(*data.ASRParam)
+	recognitionRequest := newRecognitionRequest(strconv.Itoa(int(session.RobotId)), session.Id, session.Language.Load(), questionId, asrParam.AsrDomain, session.AgentId)
 	awaitTime := 30 * time.Second
 	vadTimer := time.NewTimer(awaitTime)
 	c.WithContext(ctx).Debug("recognitionRequest:", recognitionRequest)
@@ -131,7 +132,7 @@ func ReceiveRecognizedText(streamClient pb.Speech_StreamingRecognizeClient, reco
 
 }
 
-func newRecognitionRequest(robotId, sessionId, language, traceId string, agentId int) *pb.RecognitionRequest {
+func newRecognitionRequest(robotId, sessionId, language, traceId, domain string, agentId int) *pb.RecognitionRequest {
 	vendor := "CloudMinds"
 	dialect := "zh"
 	if language == "EN" {
@@ -155,7 +156,7 @@ func newRecognitionRequest(robotId, sessionId, language, traceId string, agentId
 				"returnTrace":   "true",
 				"recognizeOnly": "true",
 				"tstAgentId":    strconv.Itoa(agentId),
-				"tstAsrDomain":  "Common_V2",
+				"tstAsrDomain":  domain,
 			},
 			Data: &pb.Body_Data{
 				Rate:     16000,    // means sampling-rate always 16000

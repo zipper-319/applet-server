@@ -86,6 +86,7 @@ type Session struct {
 	*ws.WsClient
 	applet.MethodType
 	TtsParam atomic.Value
+	AsrParam atomic.Value
 }
 
 //func NewSession(robotId int32, position string, agentId int, language string) *Session {
@@ -142,6 +143,10 @@ func GenSession(req applet.ChatWSReq, username, sessionId string, conn *websocke
 		MethodType: req.Method,
 		WsClient:   ws.NewWsClient(conn, logger),
 	}
+}
+
+type ASRParam struct {
+	AsrDomain string
 }
 
 type TTSParam struct {

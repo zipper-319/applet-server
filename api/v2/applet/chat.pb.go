@@ -486,6 +486,61 @@ func (EnvType) EnumDescriptor() ([]byte, []int) {
 	return file_v2_applet_chat_proto_rawDescGZIP(), []int{8}
 }
 
+type AsrDomain int32
+
+const (
+	AsrDomain_ServiceUnknown AsrDomain = 0
+	AsrDomain_Common         AsrDomain = 1
+	AsrDomain_Common_V2      AsrDomain = 2
+	AsrDomain_DigitalComm    AsrDomain = 3
+	AsrDomain_MedicalHealth  AsrDomain = 4
+)
+
+// Enum value maps for AsrDomain.
+var (
+	AsrDomain_name = map[int32]string{
+		0: "ServiceUnknown",
+		1: "Common",
+		2: "Common_V2",
+		3: "DigitalComm",
+		4: "MedicalHealth",
+	}
+	AsrDomain_value = map[string]int32{
+		"ServiceUnknown": 0,
+		"Common":         1,
+		"Common_V2":      2,
+		"DigitalComm":    3,
+		"MedicalHealth":  4,
+	}
+)
+
+func (x AsrDomain) Enum() *AsrDomain {
+	p := new(AsrDomain)
+	*p = x
+	return p
+}
+
+func (x AsrDomain) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (AsrDomain) Descriptor() protoreflect.EnumDescriptor {
+	return file_v2_applet_chat_proto_enumTypes[9].Descriptor()
+}
+
+func (AsrDomain) Type() protoreflect.EnumType {
+	return &file_v2_applet_chat_proto_enumTypes[9]
+}
+
+func (x AsrDomain) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use AsrDomain.Descriptor instead.
+func (AsrDomain) EnumDescriptor() ([]byte, []int) {
+	return file_v2_applet_chat_proto_rawDescGZIP(), []int{9}
+}
+
 // url中的路径参数；后续可以传递TTS发音人角色、语速、2D数字人形象等参数
 type ChatWSReq struct {
 	state         protoimpl.MessageState
@@ -1118,6 +1173,12 @@ var file_v2_applet_chat_proto_rawDesc = []byte{
 	0x70, 0x72, 0x6f, 0x64, 0x5f, 0x32, 0x35, 0x31, 0x10, 0x02, 0x12, 0x0b, 0x0a, 0x07, 0x70, 0x72,
 	0x6f, 0x64, 0x5f, 0x38, 0x35, 0x10, 0x03, 0x12, 0x0a, 0x0a, 0x06, 0x66, 0x69, 0x74, 0x5f, 0x38,
 	0x37, 0x10, 0x04, 0x12, 0x0b, 0x0a, 0x07, 0x73, 0x69, 0x74, 0x5f, 0x31, 0x33, 0x34, 0x10, 0x05,
+	0x2a, 0x5e, 0x0a, 0x09, 0x41, 0x73, 0x72, 0x44, 0x6f, 0x6d, 0x61, 0x69, 0x6e, 0x12, 0x12, 0x0a,
+	0x0e, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x55, 0x6e, 0x6b, 0x6e, 0x6f, 0x77, 0x6e, 0x10,
+	0x00, 0x12, 0x0a, 0x0a, 0x06, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x10, 0x01, 0x12, 0x0d, 0x0a,
+	0x09, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x5f, 0x56, 0x32, 0x10, 0x02, 0x12, 0x0f, 0x0a, 0x0b,
+	0x44, 0x69, 0x67, 0x69, 0x74, 0x61, 0x6c, 0x43, 0x6f, 0x6d, 0x6d, 0x10, 0x03, 0x12, 0x11, 0x0a,
+	0x0d, 0x4d, 0x65, 0x64, 0x69, 0x63, 0x61, 0x6c, 0x48, 0x65, 0x61, 0x6c, 0x74, 0x68, 0x10, 0x04,
 	0x32, 0x58, 0x0a, 0x08, 0x43, 0x68, 0x61, 0x74, 0x52, 0x6f, 0x6f, 0x6d, 0x12, 0x4c, 0x0a, 0x04,
 	0x63, 0x68, 0x61, 0x74, 0x12, 0x14, 0x2e, 0x61, 0x70, 0x70, 0x6c, 0x65, 0x74, 0x2e, 0x76, 0x32,
 	0x2e, 0x43, 0x68, 0x61, 0x74, 0x57, 0x53, 0x52, 0x65, 0x71, 0x1a, 0x15, 0x2e, 0x61, 0x70, 0x70,
@@ -1140,7 +1201,7 @@ func file_v2_applet_chat_proto_rawDescGZIP() []byte {
 	return file_v2_applet_chat_proto_rawDescData
 }
 
-var file_v2_applet_chat_proto_enumTypes = make([]protoimpl.EnumInfo, 9)
+var file_v2_applet_chat_proto_enumTypes = make([]protoimpl.EnumInfo, 10)
 var file_v2_applet_chat_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_v2_applet_chat_proto_goTypes = []interface{}{
 	(MessageType)(0),          // 0: applet.v2.MessageType
@@ -1152,21 +1213,22 @@ var file_v2_applet_chat_proto_goTypes = []interface{}{
 	(MethodType)(0),           // 6: applet.v2.MethodType
 	(ChatStatus)(0),           // 7: applet.v2.ChatStatus
 	(EnvType)(0),              // 8: applet.v2.EnvType
-	(*ChatWSReq)(nil),         // 9: applet.v2.ChatWSReq
-	(*ChatWSResp)(nil),        // 10: applet.v2.ChatWSResp
-	(*ChatClientMessage)(nil), // 11: applet.v2.ChatClientMessage
-	(*ChatServerMessage)(nil), // 12: applet.v2.ChatServerMessage
-	(*TTSParameter)(nil),      // 13: applet.v2.TTSParameter
-	(*ASRParameter)(nil),      // 14: applet.v2.ASRParameter
-	(*ChatParameter)(nil),     // 15: applet.v2.ChatParameter
+	(AsrDomain)(0),            // 9: applet.v2.AsrDomain
+	(*ChatWSReq)(nil),         // 10: applet.v2.ChatWSReq
+	(*ChatWSResp)(nil),        // 11: applet.v2.ChatWSResp
+	(*ChatClientMessage)(nil), // 12: applet.v2.ChatClientMessage
+	(*ChatServerMessage)(nil), // 13: applet.v2.ChatServerMessage
+	(*TTSParameter)(nil),      // 14: applet.v2.TTSParameter
+	(*ASRParameter)(nil),      // 15: applet.v2.ASRParameter
+	(*ChatParameter)(nil),     // 16: applet.v2.ChatParameter
 }
 var file_v2_applet_chat_proto_depIdxs = []int32{
 	6,  // 0: applet.v2.ChatWSReq.method:type_name -> applet.v2.MethodType
 	8,  // 1: applet.v2.ChatWSReq.env_type:type_name -> applet.v2.EnvType
 	0,  // 2: applet.v2.ChatClientMessage.message_type:type_name -> applet.v2.MessageType
 	1,  // 3: applet.v2.ChatServerMessage.service_type:type_name -> applet.v2.ServiceType
-	9,  // 4: applet.v2.ChatRoom.chat:input_type -> applet.v2.ChatWSReq
-	10, // 5: applet.v2.ChatRoom.chat:output_type -> applet.v2.ChatWSResp
+	10, // 4: applet.v2.ChatRoom.chat:input_type -> applet.v2.ChatWSReq
+	11, // 5: applet.v2.ChatRoom.chat:output_type -> applet.v2.ChatWSResp
 	5,  // [5:6] is the sub-list for method output_type
 	4,  // [4:5] is the sub-list for method input_type
 	4,  // [4:4] is the sub-list for extension type_name
@@ -1270,7 +1332,7 @@ func file_v2_applet_chat_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_v2_applet_chat_proto_rawDesc,
-			NumEnums:      9,
+			NumEnums:      10,
 			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,

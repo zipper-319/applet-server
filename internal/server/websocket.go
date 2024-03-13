@@ -69,7 +69,11 @@ func ChatWebsocketHandler(srv ChatWebsocketServer, logger *log.MyLogger) func(ct
 				Speed:   "3",
 				Volume:  "3",
 			}
+			asrParam := &data.ASRParam{
+				AsrDomain: "Common_V2",
+			}
 			session.TtsParam.Store(ttsParam)
+			session.AsrParam.Store(asrParam)
 
 			awaitTime := 15 * time.Second
 			connectTimer := time.NewTimer(awaitTime)
@@ -185,6 +189,7 @@ func ChatWebsocketHandler(srv ChatWebsocketServer, logger *log.MyLogger) func(ct
 
 							logger.WithContext(subCtx).Debugf("[websocket] parameter; parameter:%v", parameter)
 							ttsParamNew := session.TtsParam.Load().(*data.TTSParam)
+							asrParamNew := session.AsrParam.Load().(*data.ASRParam)
 							if parameter.Pitch != "" {
 								ttsParamNew.Pitch = parameter.Pitch
 							}
@@ -203,6 +208,9 @@ func ChatWebsocketHandler(srv ChatWebsocketServer, logger *log.MyLogger) func(ct
 								} else {
 									ttsParamNew.IsClone = true
 								}
+							}
+							if parameter.ServiceType > 0 {
+								asrParamNew.AsrDomain = applet.ServiceType(parameter.ServiceType).String()
 							}
 							session.TtsParam.Store(ttsParamNew)
 						}
