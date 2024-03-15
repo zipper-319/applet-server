@@ -2,6 +2,7 @@ package nlp
 
 import (
 	"applet-server/api/v2/applet"
+	"applet-server/api/v2/applet/common"
 	"applet-server/internal/biz/nlp/proto"
 	"applet-server/internal/conf"
 	"applet-server/internal/data"
@@ -41,7 +42,7 @@ func NewTalkClient(c *conf.App, data *data.Data, logger *log.MyLogger) *TalkClie
 	}
 }
 
-func (c *TalkClient) GetTalkClient(env applet.EnvType) (pb.TalkClient, error) {
+func (c *TalkClient) GetTalkClient(env common.EnvType) (pb.TalkClient, error) {
 	ctx, _ := context.WithTimeout(context.Background(), c.timeout)
 	addr := c.GetNLPAddr(env.String())
 	conn, err := grpc.DialContext(ctx, addr,

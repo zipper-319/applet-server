@@ -1,7 +1,7 @@
 package asr
 
 import (
-	"applet-server/api/v2/applet"
+	"applet-server/api/v2/applet/common"
 	pb "applet-server/internal/biz/asr/proto"
 	"applet-server/internal/conf"
 	"applet-server/internal/data"
@@ -38,7 +38,7 @@ func NewAsRControllerClient(c *conf.App, data *data.Data, logger *log.MyLogger) 
 	}
 }
 
-func (c *AsRControllerClient) GetSpeechClient(env applet.EnvType) (pb.SpeechClient, error) {
+func (c *AsRControllerClient) GetSpeechClient(env common.EnvType) (pb.SpeechClient, error) {
 	ctx, _ := context.WithTimeout(context.Background(), c.timeout)
 	conn, err := grpc.DialContext(ctx, c.GetASRAddr(env.String()),
 		grpc.WithInsecure(),

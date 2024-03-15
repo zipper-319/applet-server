@@ -1,7 +1,7 @@
 package tts
 
 import (
-	"applet-server/api/v2/applet"
+	"applet-server/api/v2/applet/common"
 	"applet-server/internal/biz/tts/proto/v1"
 	"applet-server/internal/biz/tts/proto/v2"
 	"applet-server/internal/conf"
@@ -38,7 +38,7 @@ func NewTTSClient(c *conf.App, data *data.Data, logger *log.MyLogger) *TTSClient
 	}
 }
 
-func (c *TTSClient) GetTTSClient(env applet.EnvType) (v2.CloudMindsTTSClient, error) {
+func (c *TTSClient) GetTTSClient(env common.EnvType) (v2.CloudMindsTTSClient, error) {
 	ctx, _ := context.WithTimeout(context.Background(), c.timeout)
 	conn, err := grpc.DialContext(ctx, c.GetTTSAddr(env.String()),
 		grpc.WithInsecure(),
