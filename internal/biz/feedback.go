@@ -33,7 +33,6 @@ type CollectQAReq struct {
 	Answer   string `json:"answer"`
 	Channel  string `json:"channel"`
 	Username string `json:"username"`
-	Env      string `json:"env"`
 }
 
 type CollectQAResp struct {
