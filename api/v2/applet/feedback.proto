@@ -41,6 +41,7 @@ message  CollectReq {
   string question = 3;
   string answer = 4;
   QAType qa_type = 5;
+  Env_Type env_type = 6;
 }
 
 message  CollectLikeReq {

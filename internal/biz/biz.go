@@ -8,4 +8,4 @@ import (
 )
 
 // ProviderSet is biz providers.
-var ProviderSet = wire.NewSet(NewVideoUseCase, NewUserUseCase, tts.NewTTSClient, NewCloneSpeakerUseCase, asr.NewAsRControllerClient, nlp.NewTalkClient)
+var ProviderSet = wire.NewSet(NewVideoUseCase, NewUserUseCase, tts.NewTTSClient, NewCloneSpeakerUseCase, asr.NewAsRControllerClient, nlp.NewTalkClient, NewFeedBackUseCase)

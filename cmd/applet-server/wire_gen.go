@@ -58,7 +58,8 @@ func wireApp(confServer *conf.Server, app *conf.App, confData *conf.Data, confLo
 	asRControllerClient := asr.NewAsRControllerClient(app, dataData, myLogger)
 	talkClient := nlp.NewTalkClient(app, dataData, myLogger)
 	chatService := service.NewChatService(ttsClient, asRControllerClient, talkClient, myLogger)
-	feedbackService := service.NewFeedbackService(app, myLogger)
+	feedBackUseCase := biz.NewFeedBackUseCase(dataData, myLogger, app)
+	feedbackService := service.NewFeedbackService(feedBackUseCase)
 	httpServer := server.NewHTTPServer(confServer, serverOption, voiceDataOperationService, accountService, cloneSpeakerService, ttsServiceService, chatService, feedbackService, myLogger)
 	kratosApp := newApp(myLogger, grpcServer, httpServer)
 	return kratosApp, func() {

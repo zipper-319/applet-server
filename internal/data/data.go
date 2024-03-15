@@ -34,9 +34,10 @@ type Data struct {
 }
 
 type ServiceAddr struct {
-	TTS string `json:"tts"`
-	ASR string `json:"asr"`
-	NLP string `json:"nlp"`
+	TTS      string `json:"tts"`
+	ASR      string `json:"asr"`
+	NLP      string `json:"nlp"`
+	Feedback string `json:"feedback"`
 }
 
 // NewData .
@@ -73,6 +74,11 @@ func (d *Data) GetTTSAddr(env string) string {
 func (d *Data) GetNLPAddr(env string) string {
 	log.Debugf("envMap:%v, env: %s; addr:%s", d.envMap, env, d.envMap[env].NLP)
 	return d.envMap[env].NLP
+}
+
+func (d *Data) GetFeedbackAddr(env string) string {
+	log.Debugf("envMap:%v, env: %s; addr:%s", d.envMap, env, d.envMap[env].Feedback)
+	return d.envMap[env].Feedback
 }
 
 type Session struct {
