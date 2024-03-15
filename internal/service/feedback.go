@@ -206,7 +206,7 @@ func (s *FeedbackService) CollectDislike(ctx context.Context, req *pb.CollectDis
 			QuestionId:     req.QuestionId,
 			Question:       req.Question,
 			Answer:         req.Answer,
-			BugType:        fmt.Sprintf("%s-%s", req.BugType.String(), req.GetBugDesc()),
+			BugType:        req.GetBugDesc(),
 			FeedbackTime:   time.Now().Format(time.RFC3339),
 			FeedbackPerson: username,
 			Env:            util.EnvTypeName[req.EnvType],
