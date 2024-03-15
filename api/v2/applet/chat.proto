@@ -5,6 +5,7 @@ package applet.v2;
 option go_package = "api/v2/applet;applet";
 
 import "google/api/annotations.proto";
+import "v2/applet/common/common.proto";
 
 service ChatRoom {
   rpc chat(ChatWSReq) returns (ChatWSResp) {
@@ -127,15 +128,6 @@ enum MethodType{
 enum  ChatStatus{
   activated = 0;
   sleep = 1;
-}
-
-enum EnvType {
-  prod_m8 = 0;
-  fit_86 = 1;
-  prod_251 = 2;
-  prod_85 = 3;
-  fit_87 = 4;
-  sit_134 = 5;
 }
 
 enum AsrDomain{

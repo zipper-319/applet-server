@@ -8,6 +8,7 @@ import "google/api/annotations.proto";
 import "validate/validate.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 import "google/protobuf/empty.proto";
+import "v2/applet/common/common.proto";
 
 
 service  Feedback {
@@ -41,7 +42,7 @@ message  CollectReq {
   string question = 3;
   string answer = 4;
   QAType qa_type = 5;
-  Env_Type env_type = 6;
+  EnvType env_type = 6;
 }
 
 message  CollectLikeReq {
@@ -60,7 +61,7 @@ message  CollectLikeReq {
   repeated Entity entities = 7;
   string source = 8;
   string  domain = 9;
-  Env_Type env_type = 10;
+  EnvType env_type = 10;
   string session_id = 11;
 }
 
@@ -74,7 +75,7 @@ enum BugType {
 
 message CollectDislikeReq {
   string question_id = 1;
-  Env_Type env_type =  2;
+  EnvType env_type =  2;
   int32  agent_id = 3;
   string language = 4;
   string question = 5;
@@ -87,13 +88,5 @@ message CollectDislikeReq {
   string  session_id = 12;
 }
 
-enum Env_Type {
-  m8 = 0;
-  fit86 = 1;
-  prod251 = 2;
-  prod85 = 3;
-  fit87 = 4;
-  sit134 = 5;
-}
 
 

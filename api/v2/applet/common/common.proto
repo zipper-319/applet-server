@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package applet.v2;
+option go_package = "applet-server/api/v2/applet/common";
+
+enum EnvType {
+  prod_m8 = 0;
+  fit_86 = 1;
+  prod_251 = 2;
+  prod_85 = 3;
+  fit_87 = 4;
+  sit_134 = 5;
+}

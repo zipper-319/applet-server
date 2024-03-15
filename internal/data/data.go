@@ -2,6 +2,7 @@ package data
 
 import (
 	"applet-server/api/v2/applet"
+	"applet-server/api/v2/applet/common"
 	"applet-server/internal/data/cache"
 	"applet-server/internal/data/minio"
 	"applet-server/internal/data/mysql"
@@ -87,7 +88,7 @@ type Session struct {
 	RobotId  int32
 	Position string
 	AgentId  int
-	Env      applet.EnvType
+	Env      common.EnvType
 	Language *atomic.String
 	*ws.WsClient
 	applet.MethodType

@@ -1,6 +1,8 @@
 package util
 
-import "applet-server/api/v2/applet"
+import (
+	"applet-server/api/v2/applet/common"
+)
 
 const REDIS_KEY_AWS_S3_USER_Prefix = "aws_s3:user"
 
@@ -17,7 +19,7 @@ func IsSpeakerExist(speakers []string, submittedSpeaker string) bool {
 	return false
 }
 
-var EnvTypeName = map[applet.Env_Type]string{
+var EnvTypeName = map[common.EnvType]string{
 	0: "生成环境",
 	1: "86环境",
 	2: "251环境",
