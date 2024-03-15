@@ -2,6 +2,7 @@ package biz
 
 import (
 	pb "applet-server/api/v2/applet"
+	"applet-server/api/v2/applet/common"
 	"applet-server/internal/conf"
 	"applet-server/internal/data"
 	"applet-server/internal/pkg/http"
@@ -33,6 +34,14 @@ type CollectQAReq struct {
 	Answer   string `json:"answer"`
 	Channel  string `json:"channel"`
 	Username string `json:"username"`
+}
+
+type CollectQAReqProd struct {
+	AgentId  int32  `json:"agentid"`
+	Lang     string `json:"lang"`
+	Question string `json:"question"`
+	Answer   string `json:"answer"`
+	Channel  string `json:"channel"`
 }
 
 type CollectQAResp struct {
@@ -121,10 +130,19 @@ func (s *FeedBackUseCase) Collect(ctx context.Context, req *pb.CollectReq) (*emp
 		Channel:  "weixin",
 		Username: username,
 	}
-
 	qaReqStr, err := json.Marshal(qaReq)
 	if err != nil {
 		return nil, err
+	}
+	if req.EnvType == common.EnvType_prod_m8{
+		tmp := &CollectQAReqProd{
+			AgentId:  req.AgentId,
+			Lang:     req.Language,
+			Question: req.Question,
+			Answer:   req.Answer,
+			Channel:  "weixin",
+		}
+		qaReqStr, _ = json.Marshal(tmp)
 	}
 
 	result, err := http.Post(fmt.Sprintf("http://%s%s", addr, "/v2/ux/docqa/markqa"), qaReqStr)
