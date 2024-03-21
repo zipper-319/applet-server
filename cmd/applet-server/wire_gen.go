@@ -41,7 +41,7 @@ func wireApp(confServer *conf.Server, app *conf.App, confData *conf.Data, confLo
 	db := mysql.NewDataDB(confData)
 	minioClient := minio.NewMinioClient(confData)
 	trainTrain := train.NewTrain(confData, myLogger)
-	dataData, err := data.NewData(s3Service, client, db, minioClient, trainTrain)
+	dataData, err := data.NewData(s3Service, client, db, minioClient, trainTrain, app)
 	if err != nil {
 		return nil, nil, err
 	}

@@ -3,6 +3,7 @@ package data
 import (
 	"applet-server/api/v2/applet"
 	"applet-server/api/v2/applet/common"
+	"applet-server/internal/conf"
 	"applet-server/internal/data/cache"
 	"applet-server/internal/data/minio"
 	"applet-server/internal/data/mysql"
@@ -30,7 +31,8 @@ type Data struct {
 	RedisClient *redis.Client
 	*gorm.DB
 	*minio.Client
-	Train  *train.Train
+	Train *train.Train
+	*conf.App
 	envMap map[string]ServiceAddr
 }
 
@@ -42,14 +44,16 @@ type ServiceAddr struct {
 }
 
 // NewData .
-func NewData(s3 *s3.S3Service, rdb *redis.Client, db *gorm.DB, minioClient *minio.Client, trainObject *train.Train) (*Data, error) {
-	envContent, err := os.ReadFile("configs/env.json")
-	if err != nil {
-		panic(err)
-	}
+func NewData(s3 *s3.S3Service, rdb *redis.Client, db *gorm.DB, minioClient *minio.Client, trainObject *train.Train, app *conf.App) (*Data, error) {
+
 	var envMap map[string]ServiceAddr
-	if err = json.Unmarshal(envContent, &envMap); err != nil {
-		panic(err)
+
+	if envContent, err := os.ReadFile("configs/env.json"); err != nil {
+		log.Error(err.Error())
+	} else {
+		if err = json.Unmarshal(envContent, &envMap); err != nil {
+			panic(err)
+		}
 	}
 	log.Debugf("envMap: %v", envMap)
 	return &Data{
@@ -59,27 +63,44 @@ func NewData(s3 *s3.S3Service, rdb *redis.Client, db *gorm.DB, minioClient *mini
 		Client:      minioClient,
 		Train:       trainObject,
 		envMap:      envMap,
+		App:         app,
 	}, nil
 }
 
 func (d *Data) GetASRAddr(env string) string {
-	log.Debugf("envMap:%v, env: %s; addr:%s", d.envMap, env, d.envMap[env].ASR)
-	return d.envMap[env].ASR
+	result := d.Asr.GetAddr()
+	if tmp, ok := d.envMap[env]; ok {
+		result = tmp.ASR
+	}
+	log.Debugf("envMap:%v, env: %s;asr addr:%s", d.envMap, env, result)
+	return result
 }
 
 func (d *Data) GetTTSAddr(env string) string {
-	log.Debugf("envMap:%v, env: %s; addr:%s", d.envMap, env, d.envMap[env].TTS)
-	return d.envMap[env].TTS
+	result := d.Tts.GetAddr()
+	if tmp, ok := d.envMap[env]; ok {
+		result = tmp.TTS
+	}
+	log.Debugf("envMap:%v, env: %s; tts addr:%s", d.envMap, env, result)
+	return result
 }
 
 func (d *Data) GetNLPAddr(env string) string {
-	log.Debugf("envMap:%v, env: %s; addr:%s", d.envMap, env, d.envMap[env].NLP)
-	return d.envMap[env].NLP
+	result := d.Nlp.GetAddr()
+	if tmp, ok := d.envMap[env]; ok {
+		result = tmp.NLP
+	}
+	log.Debugf("envMap:%v, env: %s; nlp addr:%s", d.envMap, env, result)
+	return result
 }
 
 func (d *Data) GetFeedbackAddr(env string) string {
-	log.Debugf("envMap:%v, env: %s; addr:%s", d.envMap, env, d.envMap[env].Feedback)
-	return d.envMap[env].Feedback
+	result := d.Feedback.GetAddr()
+	if tmp, ok := d.envMap[env]; ok {
+		result = tmp.Feedback
+	}
+	log.Debugf("envMap:%v, env: %s; feedback addr:%s", d.envMap, env, result)
+	return result
 }
 
 type Session struct {
