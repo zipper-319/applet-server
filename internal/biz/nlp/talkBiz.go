@@ -13,7 +13,6 @@ import (
 	"github.com/bitly/go-simplejson"
 	"github.com/idoubi/goz"
 	"google.golang.org/grpc"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -114,7 +113,7 @@ func genTalkRequest(isFull bool, question, questionId string, session *data.Sess
 
 	sessionId := session.Id
 	agentId := int64(session.AgentId)
-	robotId := strconv.Itoa(int(session.RobotId))
+	nlpParam := session.NlpParam.Load().(*data.NlpParam)
 	position := session.Position
 	language := session.Language.Load()
 
@@ -125,7 +124,7 @@ func genTalkRequest(isFull bool, question, questionId string, session *data.Sess
 		QuestionID: questionId,
 		EventType:  pb.Text,
 		EnvInfo:    make(map[string]string),
-		RobotID:    robotId,
+		RobotID:    nlpParam.RobotId,
 		TenantCode: "mpTenantId",
 		Version:    "v3", //speech.Header.Version,
 		Position:   position,

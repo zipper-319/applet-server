@@ -74,6 +74,7 @@ func ChatWebsocketHandler(srv ChatWebsocketServer, logger *log.MyLogger) func(ct
 			}
 			session.TtsParam.Store(ttsParam)
 			session.AsrParam.Store(asrParam)
+			session.NlpParam.Store(&data.NlpParam{RobotId: ""})
 
 			awaitTime := 15 * time.Second
 			connectTimer := time.NewTimer(awaitTime)
@@ -190,6 +191,7 @@ func ChatWebsocketHandler(srv ChatWebsocketServer, logger *log.MyLogger) func(ct
 							logger.WithContext(subCtx).Debugf("[websocket] parameter; parameter:%v", parameter)
 							ttsParamNew := session.TtsParam.Load().(*data.TTSParam)
 							asrParamNew := session.AsrParam.Load().(*data.ASRParam)
+							nlpParamNew := session.NlpParam.Load().(*data.NlpParam)
 							if parameter.Pitch != "" {
 								ttsParamNew.Pitch = parameter.Pitch
 							}
@@ -212,8 +214,13 @@ func ChatWebsocketHandler(srv ChatWebsocketServer, logger *log.MyLogger) func(ct
 							if parameter.ServiceType > 0 {
 								asrParamNew.AsrDomain = applet.AsrDomain(parameter.ServiceType).String()
 							}
+
+							if parameter.RobotId != "" {
+								nlpParamNew.RobotId = parameter.RobotId
+							}
 							session.TtsParam.Store(ttsParamNew)
 							session.AsrParam.Store(asrParamNew)
+							session.NlpParam.Store(nlpParamNew)
 						}
 					}
 

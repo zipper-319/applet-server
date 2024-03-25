@@ -115,6 +115,7 @@ type Session struct {
 	applet.MethodType
 	TtsParam atomic.Value
 	AsrParam atomic.Value
+	NlpParam atomic.Value
 }
 
 //func NewSession(robotId int32, position string, agentId int, language string) *Session {
@@ -175,6 +176,9 @@ func GenSession(req applet.ChatWSReq, username, sessionId string, conn *websocke
 
 type ASRParam struct {
 	AsrDomain string
+}
+type NlpParam struct {
+	RobotId string
 }
 
 type TTSParam struct {
