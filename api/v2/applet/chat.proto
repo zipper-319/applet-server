@@ -22,7 +22,8 @@ message ChatWSReq {
   string position = 2;
   string language = 3;
   int32  agent_id = 4 ;
-  EnvType  env_type = 5 [json_name = "env_type"];
+  string robot_id = 5;
+  EnvType  env_type = 6 [json_name = "env_type"];
 }
 
 message ChatWSResp {

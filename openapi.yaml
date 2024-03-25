@@ -250,6 +250,10 @@ paths:
                   schema:
                     type: integer
                     format: int32
+                - name: robotId
+                  in: query
+                  schema:
+                    type: string
                 - name: env_type
                   in: query
                   schema:

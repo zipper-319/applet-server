@@ -74,7 +74,7 @@ func ChatWebsocketHandler(srv ChatWebsocketServer, logger *log.MyLogger) func(ct
 			}
 			session.TtsParam.Store(ttsParam)
 			session.AsrParam.Store(asrParam)
-			session.NlpParam.Store(&data.NlpParam{RobotId: ""})
+			session.NlpParam.Store(&data.NlpParam{RobotId: in.RobotId})
 
 			awaitTime := 15 * time.Second
 			connectTimer := time.NewTimer(awaitTime)
