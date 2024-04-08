@@ -13,7 +13,6 @@ import (
 	"github.com/bitly/go-simplejson"
 	"github.com/idoubi/goz"
 	"google.golang.org/grpc"
-	"strings"
 	"time"
 )
 
@@ -169,7 +168,8 @@ func parseTalkResp(resp *pb.TalkResponse) data.TalkResp {
 					if ansItem == nil {
 						ansItem = new(data.Answer)
 					}
-					ansItem.Text = strings.ReplaceAll(strings.TrimSpace(resp.Tts[i].Text), "\n", "")
+					//ansItem.Text = strings.ReplaceAll(strings.TrimSpace(resp.Tts[i].Text), "\n", "")
+					ansItem.Text = resp.Tts[i].Text
 					ansItem.Lang = resp.Tts[i].Lang
 				}
 				if resp.Tts[i].Action.Param.Url != "" {

@@ -148,7 +148,7 @@ func (c *ChatService) HandlerTTSToClient(ctx context.Context, ttsText, language 
 		wg.Done()
 	}()
 	ttsParam := session.TtsParam.Load().(*data.TTSParam)
-	log.Debugf("start to call tts; ttsText:%s, ttsParam:%+v", ttsText, ttsParam)
+	c.WithContext(ctx).Debugf("start to call tts; ttsText:%s, ttsParam:%+v", ttsText, ttsParam)
 	ttsChan, err := c.CallTTSV2(ctx, session, ttsParam, ttsText, language)
 	if err != nil {
 		c.WithContext(ctx).Errorf("ttsText:%s, call tts error:%v", ttsText, err)
