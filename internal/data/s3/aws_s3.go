@@ -33,8 +33,6 @@ func NewS3Service(config *conf.Data, logger *log.MyLogger) (*S3Service, error) {
 		DisableSSL: aws.Bool(false),
 		Endpoint:   aws.String(config.S3.Endpoint),
 		Region:     aws.String(config.S3.Region),
-		// aws s3
-		//Credentials: credentials.NewStaticCredentials("AKIA5S5K44JHI2G5V7MU", "IEVM3My5men1km7taC29g7SJPHcSLoRkZwAxTYK1", ""),
 		Credentials: credentials.NewStaticCredentials(config.S3.AccessKey, config.S3.SecretKey, ""),
 	})
 
